@@ -1,6 +1,7 @@
-package main
+package server
 
 import (
+	"calificationApi/internal/database"
 	"flag"
 	"fmt"
 	"log"
@@ -19,11 +20,16 @@ type application struct {
 	logger *log.Logger
 }
 
-func main() {
+func ListenServer() {
 	var conf config
+	var mc database.MongoConfig
+	flag.StringVar(&mc.DbUri, "DB_URI", "mongodb://localhost:27017", "MongoDB URI")
+	flag.StringVar(&mc.Username, "DB_U", "", "MongoDB Username")
+	flag.StringVar(&mc.Password, "DB_P", "", "MongoDB Password")
 	flag.UintVar(&conf.port, "port", 8080, "port to listen on")
-	flag.StringVar(&conf.env, "env", "development", "environment to use dev|prod|test")
+	flag.StringVar(&conf.env, "env", "dev", "environment to use dev|prod|test")
 	flag.Parse()
+	database.SetMongoConfig(mc)
 	addr := fmt.Sprintf(":%d", conf.port)
 
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -45,5 +51,4 @@ func main() {
 	if err != nil {
 		return
 	}
-
 }
