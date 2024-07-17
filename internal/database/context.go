@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	mongo "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 )
@@ -18,7 +18,9 @@ type MongoConfig struct {
 }
 
 type MongoClient struct {
-	Users *mongo.Collection
+	Student  *mongo.Collection
+	Teachers *mongo.Collection
+	Marks    *mongo.Collection
 }
 
 func SetMongoConfig(data MongoConfig) {
@@ -39,10 +41,18 @@ func GetDatabaseConnection() (*MongoClient, *mongo.Client) {
 		log.Fatal(err)
 		return nil, nil
 	}
-	db := client.Database(dbName)
 
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		panic(err.Error())
+		return nil, nil
+	}
+
+	db := client.Database(dbName)
 	MongoEngine := &MongoClient{
-		Users: db.Collection("Users"),
+		Student:  db.Collection("Student"),
+		Teachers: db.Collection("Teachers"),
+		Marks:    db.Collection("Marks"),
 	}
 
 	return MongoEngine, client

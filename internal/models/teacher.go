@@ -1,6 +1,6 @@
 package models
 
-type Student struct {
+type Teacher struct {
 	Carnet    string `bson:"carnet"`
 	FirstName string `bson:"first_name"`
 	LastName  string `bson:"last_name"`

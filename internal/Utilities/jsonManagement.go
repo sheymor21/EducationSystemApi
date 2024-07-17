@@ -2,21 +2,20 @@ package Utilities
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
 )
 
-func ReadJson(body io.ReadCloser, mapper any) {
-	all, err := io.ReadAll(body)
-	if err != nil {
-		return
-	}
+func ReadJson(w http.ResponseWriter, r *http.Request, mapper any) error {
+	maxBytes := 1_048_576
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+	enc := json.NewDecoder(r.Body)
+	enc.DisallowUnknownFields()
 
-	err = json.Unmarshal(all, mapper)
-	if err != nil {
-		return
+	if err := enc.Decode(mapper); err != nil {
+		return err
 	}
+	return nil
 }
 
 func WriteJson(w http.ResponseWriter, status int, data any) {

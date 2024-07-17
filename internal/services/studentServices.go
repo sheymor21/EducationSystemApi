@@ -7,7 +7,9 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"net/http"
 )
@@ -30,10 +32,16 @@ func HttpStudentHandler(w http.ResponseWriter, r *http.Request) {
 func addStudent(w http.ResponseWriter, r *http.Request) {
 
 	student := models.Student{}
-	Utilities.ReadJson(r.Body, &student)
+	err := Utilities.ReadJson(w, r, &student)
+	if err != nil {
+		httpInternalError(w, err.Error())
+		log.Println(err)
+		return
+	}
 	dbContext, client := database.GetDatabaseConnection()
 	defer database.CloseConnection(client, context.TODO())
-	_, err := dbContext.Users.InsertOne(context.TODO(), student)
+
+	_, err = dbContext.Student.InsertOne(context.TODO(), student)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,14 +50,12 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 
 func getStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
-	_, client := database.GetDatabaseConnection()
+	dbContext, client := database.GetDatabaseConnection()
 	defer database.CloseConnection(client, context.TODO())
 
-	student, err := getStudentByCarnet(carnet)
-	if errors.Is(err, mongo.ErrNoDocuments) {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	} else if err != nil {
-		log.Fatal(err)
+	student, err := getStudentByCarnet(dbContext, carnet)
+	if err != nil {
+		httpNotFoundError(w, NewNotFoundMongoError("carnet").msg)
 	} else {
 
 		Utilities.WriteJson(w, http.StatusOK, student)
@@ -60,18 +66,23 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	anyStudent := anyStudent(carnet)
 	if !anyStudent {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		httpNotFoundError(w, NewNotFoundMongoError("carnet").msg)
 	} else {
 
 		var student models.Student
-		Utilities.ReadJson(r.Body, &student)
+		err := Utilities.ReadJson(w, r, &student)
+		if err != nil {
+			httpInternalError(w, err.Error())
+			log.Println(err)
+			return
+		}
 		dbContext, client := database.GetDatabaseConnection()
 		defer database.CloseConnection(client, context.TODO())
 		filter := bson.D{{"carnet", carnet}}
 		update := bson.D{{"$set", student}}
-		_, err := dbContext.Users.UpdateOne(context.TODO(), filter, update)
+		_, err = dbContext.Student.UpdateOne(context.TODO(), filter, update)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			httpInternalError(w, err.Error())
 			log.Fatal(err)
 		}
 	}
@@ -85,11 +96,11 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	anyStudent := anyStudent(carnet)
 	if !anyStudent {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		httpNotFoundError(w, NewNotFoundMongoError("carnet").msg)
 	} else {
 
 		filter := bson.D{{"carnet", carnet}}
-		_, err := dbContext.Users.DeleteOne(context.TODO(), filter)
+		_, err := dbContext.Student.DeleteOne(context.TODO(), filter)
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -97,14 +108,15 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getStudentByCarnet(carnet string) (models.Student, error) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
+func getStudentByCarnet(dbContext *database.MongoClient, carnet string) (models.Student, *NotFoundMongoError) {
 
 	var student models.Student
 	filter := bson.D{{"carnet", carnet}}
-	err := dbContext.Users.FindOne(context.TODO(), filter).Decode(&student)
-	return student, err
+	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&student)
+	if err != nil {
+		return models.Student{}, NewNotFoundMongoError("Carnet")
+	}
+	return student, nil
 }
 
 func anyStudent(carnet string) bool {
@@ -112,7 +124,7 @@ func anyStudent(carnet string) bool {
 	defer database.CloseConnection(client, context.TODO())
 
 	filter := bson.D{{"carnet", carnet}}
-	err := dbContext.Users.FindOne(context.TODO(), filter).Decode(&models.Student{})
+	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Student{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return false
 	} else if err != nil {
@@ -122,4 +134,40 @@ func anyStudent(carnet string) bool {
 
 		return true
 	}
+}
+
+func getStudentIdByCarnet(dbContext *database.MongoClient, carnet string) (string, error) {
+	var result struct {
+		Id string `bson:"_id"`
+	}
+
+	filter := bson.D{{"carnet", carnet}}
+	projection := bson.D{{"_id", 1}}
+	op := options.FindOne().SetProjection(projection)
+	err := dbContext.Student.FindOne(context.TODO(), filter, op).Decode(&result)
+	if err != nil {
+		return "", NewNotFoundMongoError("Carnet")
+
+	}
+	return result.Id, nil
+}
+
+func getStudentCarnetById(dbContext *database.MongoClient, id string) (string, *NotFoundMongoError) {
+	var result struct {
+		Carnet string `bson:"carnet"`
+	}
+
+	hex, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Println(err)
+	}
+
+	filter := bson.D{{"_id", hex}}
+	projection := bson.D{{"carnet", 1}}
+	op := options.FindOne().SetProjection(projection)
+	err = dbContext.Student.FindOne(context.TODO(), filter, op).Decode(&result)
+	if err != nil {
+		return "", NewNotFoundMongoError("Id")
+	}
+	return result.Carnet, nil
 }
