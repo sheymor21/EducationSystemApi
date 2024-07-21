@@ -14,21 +14,6 @@ import (
 	"net/http"
 )
 
-func HttpStudentHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getStudent(w, r)
-	case http.MethodPost:
-		addStudent(w, r)
-	case http.MethodPut:
-		putStudent(w, r)
-	case http.MethodDelete:
-		deleteStudent(w, r)
-	default:
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
-	}
-}
-
 func addStudent(w http.ResponseWriter, r *http.Request) {
 
 	student := models.Student{}
@@ -38,9 +23,6 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
-
 	_, err = dbContext.Student.InsertOne(context.TODO(), student)
 	if err != nil {
 		log.Fatal(err)
@@ -50,8 +32,6 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 
 func getStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	student, err := getStudentByCarnet(dbContext, carnet)
 	if err != nil {
@@ -76,8 +56,6 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
-		dbContext, client := database.GetDatabaseConnection()
-		defer database.CloseConnection(client, context.TODO())
 		filter := bson.D{{"carnet", carnet}}
 		update := bson.D{{"$set", student}}
 		_, err = dbContext.Student.UpdateOne(context.TODO(), filter, update)
@@ -90,8 +68,6 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteStudent(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	carnet := r.URL.Query().Get("Carnet")
 	anyStudent := anyStudent(carnet)
@@ -108,7 +84,7 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getStudentByCarnet(dbContext *database.MongoClient, carnet string) (models.Student, *NotFoundMongoError) {
+func getStudentByCarnet(dbContext *database.MongoContext, carnet string) (models.Student, *NotFoundMongoError) {
 
 	var student models.Student
 	filter := bson.D{{"carnet", carnet}}
@@ -120,8 +96,6 @@ func getStudentByCarnet(dbContext *database.MongoClient, carnet string) (models.
 }
 
 func anyStudent(carnet string) bool {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Student{})
@@ -136,7 +110,7 @@ func anyStudent(carnet string) bool {
 	}
 }
 
-func getStudentIdByCarnet(dbContext *database.MongoClient, carnet string) (string, error) {
+func getStudentIdByCarnet(dbContext *database.MongoContext, carnet string) (string, error) {
 	var result struct {
 		Id string `bson:"_id"`
 	}
@@ -152,7 +126,7 @@ func getStudentIdByCarnet(dbContext *database.MongoClient, carnet string) (strin
 	return result.Id, nil
 }
 
-func getStudentCarnetById(dbContext *database.MongoClient, id string) (string, *NotFoundMongoError) {
+func getStudentCarnetById(dbContext *database.MongoContext, id string) (string, *NotFoundMongoError) {
 	var result struct {
 		Carnet string `bson:"carnet"`
 	}

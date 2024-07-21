@@ -3,7 +3,6 @@ package services
 import (
 	"calificationApi/internal/Dto"
 	"calificationApi/internal/Utilities"
-	"calificationApi/internal/database"
 	"calificationApi/internal/models"
 	"context"
 	"errors"
@@ -13,33 +12,7 @@ import (
 	"net/http"
 )
 
-func HttpMarkHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getMark(w, r)
-	case http.MethodPost:
-		addMark(w, r)
-	case http.MethodPut:
-		updateMark(w, r)
-	case http.MethodDelete:
-		deleteMark(w, r)
-	default:
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
-	}
-}
-
-func HttpMarksHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getMarksByStudentCarnet(w, r)
-	default:
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
-	}
-}
-
 func addMark(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	var input Dto.MarkAddRequest
 	err := Utilities.ReadJson(w, r, &input)
@@ -77,8 +50,6 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	carnet := r.URL.Query().Get("Carnet")
 	studentId, err := getStudentIdByCarnet(dbContext, carnet)
@@ -126,8 +97,6 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMark(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	id := r.URL.Query().Get("id")
 	anyMark := anyMark(id)
@@ -146,8 +115,6 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteMark(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	id := r.URL.Query().Get("id")
 	anyMark := anyMark(id)
@@ -164,8 +131,6 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateMark(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	carnet := r.URL.Query().Get("Carnet")
 	anyMark := anyMark(carnet)
@@ -189,8 +154,6 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func anyMark(carnet string) bool {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})

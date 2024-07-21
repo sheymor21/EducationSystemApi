@@ -30,6 +30,9 @@ func ListenServer() {
 	flag.StringVar(&conf.env, "env", "dev", "environment to use dev|prod|test")
 	flag.Parse()
 	database.SetMongoConfig(mc)
+	database.Run()
+	dbContext := database.GetMongoContext()
+	defer database.CloseConnection(dbContext.Client)
 	addr := fmt.Sprintf(":%d", conf.port)
 
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)

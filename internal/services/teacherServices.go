@@ -14,25 +14,7 @@ import (
 	"net/http"
 )
 
-func HttpTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		getTeacher(w, r)
-	case http.MethodPost:
-		addTeacher(w, r)
-	case http.MethodPut:
-		updateTeacher(w, r)
-	case http.MethodDelete:
-		deleteTeacher(w, r)
-	default:
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
-	}
-}
-
 func addTeacher(w http.ResponseWriter, r *http.Request) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
-
 	var teacher models.Teacher
 	err := Utilities.ReadJson(w, r, &teacher)
 	if err != nil {
@@ -47,9 +29,6 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateTeacher(w http.ResponseWriter, r *http.Request) {
-
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	var teacher models.Teacher
 	err := Utilities.ReadJson(w, r, &teacher)
@@ -68,9 +47,6 @@ func updateTeacher(w http.ResponseWriter, r *http.Request) {
 
 func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
-
 	carnet := r.URL.Query().Get("Carnet")
 	filter := bson.M{"carnet": carnet}
 
@@ -82,9 +58,6 @@ func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTeacher(w http.ResponseWriter, r *http.Request) {
-
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	carnet := r.URL.Query().Get("Carnet")
 	anyTeacher := anyTeacher(carnet)
@@ -102,8 +75,6 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 }
 
 func anyTeacher(carnet string) bool {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Teachers.FindOne(context.TODO(), filter).Decode(&models.Teacher{})
@@ -118,7 +89,7 @@ func anyTeacher(carnet string) bool {
 	}
 }
 
-func getTeacherIdByCarnet(dbContext *database.MongoClient, carnet string) (string, error) {
+func getTeacherIdByCarnet(dbContext *database.MongoContext, carnet string) (string, error) {
 	var result struct {
 		Id string `bson:"_id"`
 	}
@@ -136,8 +107,6 @@ func getTeacherIdByCarnet(dbContext *database.MongoClient, carnet string) (strin
 }
 
 func getTeacherCarnetById(id string) (string, error) {
-	dbContext, client := database.GetDatabaseConnection()
-	defer database.CloseConnection(client, context.TODO())
 
 	var result struct {
 		Carnet string `bson:"carnet"`
