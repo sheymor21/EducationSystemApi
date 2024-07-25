@@ -4,12 +4,15 @@ import (
 	"calificationApi/internal/Dto"
 	"calificationApi/internal/Utilities"
 	"calificationApi/internal/models"
+	"calificationApi/internal/server/customErrors"
+	"calificationApi/internal/services/search"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
+	"sync"
 )
 
 func addMark(w http.ResponseWriter, r *http.Request) {
@@ -21,8 +24,8 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	teacherId, teacherErr := getTeacherIdByCarnet(dbContext, input.TeacherCarnet)
-	studentId, studentErr := getStudentIdByCarnet(dbContext, input.StudentCarnet)
+	teacherId, teacherErr := search.GetTeacherIdByCarnet(input.TeacherCarnet)
+	studentId, studentErr := search.GetStudentIdByCarnet(dbContext, input.StudentCarnet)
 	if teacherErr != nil || studentErr != nil {
 		if teacherErr == nil {
 			httpInternalError(w, studentErr.Error())
@@ -51,49 +54,61 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 
 func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 
+	var wg sync.WaitGroup
+	ch := make(chan string)
+	errCh := make(chan error, 1)
 	carnet := r.URL.Query().Get("Carnet")
-	studentId, err := getStudentIdByCarnet(dbContext, carnet)
-	if err != nil {
-		httpNotFoundError(w, err.Error())
-	} else {
-
-		var marks []Dto.MarksGetRequest
-		filter := bson.D{{"student_id", studentId}}
-		cursor, err := dbContext.Marks.Find(context.TODO(), filter)
+	wg.Add(2)
+	go func(carnet string) {
+		defer wg.Done()
+		studentId, err := search.GetStudentIdByCarnet(dbContext, carnet)
 		if err != nil {
-			httpNotFoundError(w, NewNotFoundMongoError("carnet").msg)
-		} else {
+			errCh <- err
+			return
+		}
+		ch <- studentId
 
-			for cursor.Next(context.TODO()) {
-				var dbMark models.Mark
-				err := cursor.Decode(&dbMark)
-				if err != nil {
-					httpInternalError(w, err.Error())
-				} else {
+	}(carnet)
 
-					teacherCarnet, err := getTeacherCarnetById(dbMark.TeacherId)
+	select {
+	case studentId := <-ch:
+		go func(studentId string, carnet string) {
+			defer wg.Done()
+			var marks []Dto.MarksGetRequest
+			filter := bson.D{{"student_id", studentId}}
+			cursor, err := dbContext.Marks.Find(context.TODO(), filter)
+			if err != nil {
+				httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
+			} else {
+
+				for cursor.Next(context.TODO()) {
+					var dbMark models.Mark
+					err := cursor.Decode(&dbMark)
 					if err != nil {
-						httpNotFoundError(w, NewNotFoundMongoError("teacherCarnet").msg)
+						httpInternalError(w, err.Error())
 					} else {
 
-						var mark Dto.MarksGetRequest
-						{
-							mark.ID = dbMark.ID
-							mark.Semester = dbMark.Semester
-							mark.Grade = dbMark.Grade
-							mark.Mark = dbMark.Mark
-							mark.TeacherCarnet = teacherCarnet
-							mark.StudentCarnet = carnet
+						teacherCarnet, errTeacher := search.GetTeacherCarnetById(dbMark.TeacherId)
+						if errTeacher != nil {
+							httpNotFoundError(w, teacherCarnet)
+						}
+						mark, errMap := dbMark.ToGetRequest(carnet, teacherCarnet)
+						if errors.Is(errMap, customErrors.NewNotFoundMongoError("Carnet")) {
+							httpNotFoundError(w, errMap.Error())
 						}
 						marks = append(marks, mark)
 					}
 				}
+				Utilities.WriteJson(w, http.StatusOK, marks)
 			}
-			Utilities.WriteJson(w, http.StatusOK, marks)
-		}
 
+		}(studentId, carnet)
+
+	case err := <-errCh:
+		httpNotFoundError(w, err.Error())
+		return
 	}
-
+	wg.Wait()
 }
 
 func getMark(w http.ResponseWriter, r *http.Request) {
@@ -101,13 +116,13 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	anyMark := anyMark(id)
 	if !anyMark {
-		httpNotFoundError(w, NewNotFoundMongoError("id").msg)
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 	} else {
 		filter := bson.M{"id": id}
 		var mark models.Mark
 		err := dbContext.Marks.FindOne(context.TODO(), filter).Decode(&mark)
 		if err != nil {
-			httpNotFoundError(w, NewNotFoundMongoError("id").msg)
+			httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		} else {
 			Utilities.WriteJson(w, http.StatusOK, mark)
 		}
@@ -119,7 +134,7 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	anyMark := anyMark(id)
 	if !anyMark {
-		httpNotFoundError(w, NewNotFoundMongoError("id").msg)
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 	} else {
 		filter := bson.M{"id": id}
 		_, err := dbContext.Marks.DeleteOne(context.TODO(), filter)
@@ -135,7 +150,7 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	anyMark := anyMark(carnet)
 	if !anyMark {
-		httpNotFoundError(w, NewNotFoundMongoError("carnet").msg)
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 	} else {
 		var mark models.Mark
 		err := Utilities.ReadJson(w, r, &mark)
@@ -151,8 +166,8 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 			httpInternalError(w, err.Error())
 		}
 	}
-}
 
+}
 func anyMark(carnet string) bool {
 
 	filter := bson.D{{"carnet", carnet}}

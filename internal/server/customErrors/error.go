@@ -1,4 +1,4 @@
-package services
+package customErrors
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 
 type NotFoundMongoError struct {
 	item string
-	msg  string
+	Msg  string
 }
 
 func NewNotFoundMongoError(item string) *NotFoundMongoError {
 	var err NotFoundMongoError
-	err.msg = fmt.Sprintf("Not Found this %s", item)
+	err.Msg = fmt.Sprintf("Not Found this %s", item)
 	return &err
 }
 
