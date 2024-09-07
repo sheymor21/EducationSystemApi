@@ -23,6 +23,7 @@ type application struct {
 func ListenServer() {
 	var conf config
 	var mc database.MongoConfig
+	flag.StringVar(&mc.DbName, "DB_NAME", "EducationSystem", "MongoDB NAME")
 	flag.StringVar(&mc.DbUri, "DB_URI", "mongodb://localhost:27017", "MongoDB URI")
 	flag.StringVar(&mc.Username, "DB_U", "", "MongoDB Username")
 	flag.StringVar(&mc.Password, "DB_P", "", "MongoDB Password")

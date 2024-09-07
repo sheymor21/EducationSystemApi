@@ -8,13 +8,12 @@ import (
 	"sync"
 )
 
-const dbName = "qualificationsDb"
-
 var mc MongoConfig
 var m sync.Once
 var mongoContext MongoContext
 
 type MongoConfig struct {
+	DbName   string
 	DbUri    string
 	Username string
 	Password string
@@ -32,6 +31,7 @@ func GetMongoContext() *MongoContext {
 }
 
 func SetMongoConfig(data MongoConfig) {
+	mc.DbName = data.DbName
 	mc.DbUri = data.DbUri
 	mc.Username = data.Username
 	mc.Password = data.Password
@@ -55,7 +55,7 @@ func Run() {
 			panic(err.Error())
 		}
 
-		db := client.Database(dbName)
+		db := client.Database(mc.DbName)
 		mongoContext = MongoContext{
 			Student:  db.Collection("Student"),
 			Teachers: db.Collection("Teachers"),
