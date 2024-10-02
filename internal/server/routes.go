@@ -7,9 +7,13 @@ import (
 
 func (app *application) Routes() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/student", services.HttpStudentHandler)
-	mux.HandleFunc("/teacher", services.HttpTeacherHandler)
-	mux.HandleFunc("/mark", services.HttpMarkHandler)
+	studentHandler := http.HandlerFunc(services.HttpStudentHandler)
+	teacherHandler := http.HandlerFunc(services.HttpTeacherHandler)
+	markHandler := http.HandlerFunc(services.HttpMarkHandler)
+
+	mux.Handle("/student", middlewareStudentValidator(studentHandler, app.validator))
+	mux.Handle("/teacher", middlewareTeacherValidator(teacherHandler, app.validator))
+	mux.Handle("/mark", middlewareMarkValidator(markHandler, app.validator))
 	mux.HandleFunc("/marks", services.HttpMarksHandler)
 	return mux
 }

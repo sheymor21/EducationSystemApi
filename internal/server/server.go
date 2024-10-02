@@ -4,6 +4,7 @@ import (
 	"calificationApi/internal/database"
 	"flag"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"log"
 	"net/http"
 	"os"
@@ -16,8 +17,9 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *log.Logger
+	config    config
+	logger    *log.Logger
+	validator *validator.Validate
 }
 
 func ListenServer() {
@@ -38,8 +40,9 @@ func ListenServer() {
 
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	app := &application{
-		config: conf,
-		logger: logger,
+		config:    conf,
+		logger:    logger,
+		validator: validator.New(validator.WithRequiredStructEnabled()),
 	}
 
 	srv := &http.Server{
