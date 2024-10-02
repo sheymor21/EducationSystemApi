@@ -1,9 +1,9 @@
 package services
 
 import (
-	"calificationApi/internal/Utilities"
 	"calificationApi/internal/models"
 	"calificationApi/internal/server/customErrors"
+	"calificationApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,7 +19,7 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		defer wg.Done()
 		var teacher models.Teacher
-		err := Utilities.ReadJson(w, r, &teacher)
+		err := utilities.ReadJson(w, r, &teacher)
 		if err != nil {
 			httpInternalError(w, err.Error())
 			log.Println(err)
@@ -39,7 +39,7 @@ func updateTeacher(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		defer wg.Done()
 		var teacher models.Teacher
-		err := Utilities.ReadJson(w, r, &teacher)
+		err := utilities.ReadJson(w, r, &teacher)
 		if err != nil {
 			httpInternalError(w, err.Error())
 			log.Println(err)
@@ -89,7 +89,7 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
 			}
-			Utilities.WriteJson(w, http.StatusOK, teacher)
+			utilities.WriteJson(w, http.StatusOK, teacher)
 		}
 	}()
 	wg.Wait()

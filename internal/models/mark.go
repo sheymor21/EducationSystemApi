@@ -1,7 +1,7 @@
 package models
 
 import (
-	"calificationApi/internal/Dto"
+	"calificationApi/internal/dto"
 )
 
 type Mark struct {
@@ -13,9 +13,9 @@ type Mark struct {
 	Semester  string `bson:"semester"`
 }
 
-func (m *Mark) ToGetRequest(studentCarnet string, teacherCarnet string) (Dto.MarksGetRequest, error) {
+func (m *Mark) ToGetRequest(studentCarnet string, teacherCarnet string) (dto.MarksGetRequest, error) {
 
-	var mapper Dto.MarksGetRequest
+	var mapper dto.MarksGetRequest
 	{
 		mapper.Mark = m.Mark
 		mapper.ID = m.ID

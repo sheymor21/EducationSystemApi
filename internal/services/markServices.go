@@ -1,11 +1,11 @@
 package services
 
 import (
-	"calificationApi/internal/Dto"
-	"calificationApi/internal/Utilities"
+	"calificationApi/internal/dto"
 	"calificationApi/internal/models"
 	"calificationApi/internal/server/customErrors"
 	"calificationApi/internal/services/search"
+	"calificationApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +17,8 @@ import (
 
 func addMark(w http.ResponseWriter, r *http.Request) {
 
-	var input Dto.MarkAddRequest
-	err := Utilities.ReadJson(w, r, &input)
+	var input dto.MarkAddRequest
+	err := utilities.ReadJson(w, r, &input)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		log.Println(err)
@@ -36,7 +36,6 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 
 		var mark models.Mark
 		{
-			//mark.ID = "8"
 			mark.TeacherId = teacherId
 			mark.StudentId = studentId
 			mark.Grade = input.Grade
@@ -74,7 +73,7 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 	case studentId := <-ch:
 		go func(studentId string, carnet string) {
 			defer wg.Done()
-			var marks []Dto.MarksGetRequest
+			var marks []dto.MarksGetRequest
 			filter := bson.D{{"student_id", studentId}}
 			cursor, err := dbContext.Marks.Find(context.TODO(), filter)
 			if err != nil {
@@ -99,7 +98,7 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 						marks = append(marks, mark)
 					}
 				}
-				Utilities.WriteJson(w, http.StatusOK, marks)
+				utilities.WriteJson(w, http.StatusOK, marks)
 			}
 
 		}(studentId, carnet)
@@ -124,7 +123,7 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		} else {
-			Utilities.WriteJson(w, http.StatusOK, mark)
+			utilities.WriteJson(w, http.StatusOK, mark)
 		}
 	}
 }
@@ -153,7 +152,7 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 	} else {
 		var mark models.Mark
-		err := Utilities.ReadJson(w, r, &mark)
+		err := utilities.ReadJson(w, r, &mark)
 		if err != nil {
 			httpInternalError(w, err.Error())
 			log.Println(err)

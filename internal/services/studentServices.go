@@ -1,10 +1,11 @@
 package services
 
 import (
-	"calificationApi/internal/Utilities"
 	"calificationApi/internal/database"
+	"calificationApi/internal/dto"
 	"calificationApi/internal/models"
 	"calificationApi/internal/server/customErrors"
+	"calificationApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,12 +20,19 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		student := models.Student{}
-		err := Utilities.ReadJson(w, r, &student)
+		studentDto := dto.StudentAddDto{}
+		err := utilities.ReadJson(w, r, &studentDto)
 		if err != nil {
 			httpInternalError(w, err.Error())
 			log.Println(err)
 			return
+		}
+		student := models.Student{
+			Carnet:    studentDto.Carnet,
+			FirstName: studentDto.FirstName,
+			LastName:  studentDto.LastName,
+			Age:       studentDto.Age,
+			Classroom: studentDto.Classroom,
 		}
 		_, err = dbContext.Student.InsertOne(context.TODO(), student)
 		if err != nil {
@@ -45,7 +53,7 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 			httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 		} else {
 
-			Utilities.WriteJson(w, http.StatusOK, student)
+			utilities.WriteJson(w, http.StatusOK, student)
 		}
 	}()
 	wg.Wait()
@@ -63,7 +71,7 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 		} else {
 
 			var student models.Student
-			err := Utilities.ReadJson(w, r, &student)
+			err := utilities.ReadJson(w, r, &student)
 			if err != nil {
 				httpInternalError(w, err.Error())
 				log.Println(err)
