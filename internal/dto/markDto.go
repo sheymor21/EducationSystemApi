@@ -1,11 +1,11 @@
-package Dto
+package dto
 
 type MarkAddRequest struct {
-	StudentCarnet string
-	TeacherCarnet string
-	Grade         string
-	Mark          string
-	Semester      string
+	StudentCarnet string `json:"student_carnet" validate:"required"`
+	TeacherCarnet string `json:"teacher_carnet" validate:"required"`
+	Grade         string `json:"grade" validate:"required"`
+	Mark          string `json:"mark" validate:"required"`
+	Semester      string `json:"semester" validate:"required"`
 }
 
 type MarksGetRequest struct {
