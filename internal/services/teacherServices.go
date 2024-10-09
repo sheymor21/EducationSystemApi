@@ -14,23 +14,17 @@ import (
 )
 
 func addTeacher(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		var teacher models.Teacher
-		err := utilities.ReadJson(w, r, &teacher)
-		if err != nil {
-			httpInternalError(w, err.Error())
-			log.Println(err)
-			return
-		}
-		_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
-		if err != nil {
-			httpInternalError(w, err.Error())
-		}
-	}()
-	wg.Wait()
+	var teacher models.Teacher
+	err := utilities.ReadJson(w, r, &teacher)
+	if err != nil {
+		httpInternalError(w, err.Error())
+		log.Println(err)
+		return
+	}
+	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
+	if err != nil {
+		httpInternalError(w, err.Error())
+	}
 }
 
 func updateTeacher(w http.ResponseWriter, r *http.Request) {
@@ -94,6 +88,21 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 	}()
 	wg.Wait()
 
+}
+
+func getTeachers(w http.ResponseWriter, r *http.Request) {
+	var teachers []models.Teacher
+	find, findErr := dbContext.Teachers.Find(context.TODO(), bson.M{})
+	if findErr != nil {
+		log.Fatal(findErr)
+		return
+	}
+	decodeErr := find.All(context.TODO(), &teachers)
+	if decodeErr != nil {
+		log.Fatal(decodeErr)
+		return
+	}
+	utilities.WriteJson(w, http.StatusOK, teachers)
 }
 func anyTeacher(carnet string) bool {
 
