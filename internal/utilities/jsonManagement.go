@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-playground/validator/v10"
 	"io"
 	"log"
@@ -87,14 +88,27 @@ func buildValidationMessages(errors validator.ValidationErrors) map[string]strin
 	errorMap := make(map[string]string)
 
 	for _, err := range errors {
-		if err.ActualTag() == "min" {
-			errorMap[err.Field()] = "minimum number of character" + " validation failed."
-		} else if err.ActualTag() == "max" {
-
-			errorMap[err.Field()] = "maximum number of character" + " validation failed."
-		} else {
-			errorMap[err.Field()] = err.ActualTag() + " validation failed."
-		}
+		errorMap[getFieldValidationName(err)] = getFieldValidationTag(err)
 	}
 	return errorMap
+}
+func getFieldValidationTag(err validator.FieldError) string {
+	switch err.Tag() {
+	case "min":
+		return fmt.Sprintf("the minimum number of character is %s", err.Param())
+	case "max":
+		return fmt.Sprintf("the maximum number of character is %s", err.Param())
+	default:
+		return err.ActualTag() + " validation failed"
+	}
+}
+func getFieldValidationName(err validator.FieldError) string {
+	switch err.Field() {
+	case "StudentCarnet":
+		return "Student_Carnet"
+	case "TeacherCarnet":
+		return "Teacher_Carnet"
+	default:
+		return err.Field()
+	}
 }
