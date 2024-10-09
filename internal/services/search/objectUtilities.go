@@ -16,7 +16,6 @@ func GetTeacherIdByCarnet(carnet string) (string, error) {
 	var result struct {
 		Id string `bson:"_id"`
 	}
-
 	filter := bson.D{{"carnet", carnet}}
 	projection := bson.D{{"_id", 1}}
 	op := options.FindOne().SetProjection(projection)
@@ -49,7 +48,7 @@ func GetTeacherCarnetById(id string) (string, error) {
 	return result.Carnet, nil
 }
 
-func GetStudentIdByCarnet(dbContext *database.MongoContext, carnet string) (string, error) {
+func GetStudentIdByCarnet(carnet string) (string, error) {
 	var result struct {
 		Id string `bson:"_id"`
 	}
