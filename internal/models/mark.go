@@ -13,8 +13,7 @@ type Mark struct {
 	Semester  string `bson:"semester"`
 }
 
-func (m *Mark) ToGetRequest(studentCarnet string, teacherCarnet string) (dto.MarksGetRequest, error) {
-
+func (m *Mark) ToGetRequest(studentCarnet string, teacherCarnet string) dto.MarksGetRequest {
 	var mapper dto.MarksGetRequest
 	{
 		mapper.Mark = m.Mark
@@ -24,5 +23,5 @@ func (m *Mark) ToGetRequest(studentCarnet string, teacherCarnet string) (dto.Mar
 		mapper.StudentCarnet = studentCarnet
 		mapper.TeacherCarnet = teacherCarnet
 	}
-	return mapper, nil
+	return mapper
 }
