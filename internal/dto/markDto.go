@@ -1,7 +1,7 @@
 package dto
 
 type MarkAddRequest struct {
-	StudentCarnet string `json:"student_carnet" validate:"required"`
+	StudentCarnet string `json:"student_carnet" validate:"required,min=10,max=10"`
 	TeacherCarnet string `json:"teacher_carnet" validate:"required"`
 	Grade         string `json:"grade" validate:"required"`
 	Mark          string `json:"mark" validate:"required"`
