@@ -45,7 +45,7 @@ func HttpMarkHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		go getMark(w, r)
+		getMark(w, r)
 	case http.MethodPost:
 		addMark(w, r)
 	case http.MethodPut:
