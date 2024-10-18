@@ -16,3 +16,11 @@ type MarksGetRequest struct {
 	Mark          string `json:"mark,omitempty"`
 	Semester      string `json:"semester,omitempty"`
 }
+
+type MarksUpdateRequest struct {
+	StudentCarnet string
+	TeacherCarnet string
+	Grade         string
+	Mark          string
+	Semester      string
+}

@@ -3,6 +3,7 @@ package server
 import (
 	"calificationApi/internal/dto"
 	"calificationApi/internal/utilities"
+	"calificationApi/validations"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
@@ -12,14 +13,17 @@ func middlewareMarkValidator(next http.Handler, validate *validator.Validate) ht
 		switch r.Method {
 		case http.MethodPost:
 			markDto := dto.MarkAddRequest{}
-			err := utilities.ReadJsonMiddlewareVersion(w, r, &markDto)
+
+			err := validations.Validate(w, r, validate, markDto)
 			if err != nil {
 				utilities.WriteJsonError(w, http.StatusBadRequest, err.Error())
 				return
 			}
-			err = validate.Struct(markDto)
+		case http.MethodPut:
+			markDto := dto.MarksUpdateRequest{}
+			err := validations.Validate(w, r, validate, markDto)
 			if err != nil {
-				utilities.WriteJsonError(w, http.StatusBadRequest, err.(validator.ValidationErrors))
+				utilities.WriteJsonError(w, http.StatusBadRequest, err.Error())
 				return
 			}
 		}
@@ -32,14 +36,9 @@ func middlewareTeacherValidator(next http.Handler, validate *validator.Validate)
 		switch r.Method {
 		case http.MethodPost:
 			teacherDto := dto.TeacherDto{}
-			err := utilities.ReadJsonMiddlewareVersion(w, r, &teacherDto)
+			err := validations.Validate(w, r, validate, teacherDto)
 			if err != nil {
 				utilities.WriteJsonError(w, http.StatusBadRequest, err.Error())
-				return
-			}
-			err = validate.Struct(teacherDto)
-			if err != nil {
-				utilities.WriteJsonError(w, http.StatusBadRequest, err.(validator.ValidationErrors))
 				return
 			}
 		}
@@ -52,14 +51,9 @@ func middlewareStudentValidator(next http.Handler, validate *validator.Validate)
 		switch r.Method {
 		case http.MethodPost:
 			studentAddDto := dto.StudentAddDto{}
-			err := utilities.ReadJsonMiddlewareVersion(w, r, &studentAddDto)
+			err := validations.Validate(w, r, validate, studentAddDto)
 			if err != nil {
 				utilities.WriteJsonError(w, http.StatusBadRequest, err.Error())
-				return
-			}
-			err = validate.Struct(studentAddDto)
-			if err != nil {
-				utilities.WriteJsonError(w, http.StatusBadRequest, err.(validator.ValidationErrors))
 				return
 			}
 		}

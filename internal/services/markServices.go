@@ -2,6 +2,7 @@ package services
 
 import (
 	"calificationApi/internal/dto"
+	"calificationApi/internal/mappers"
 	"calificationApi/internal/models"
 	"calificationApi/internal/server/customErrors"
 	"calificationApi/internal/services/search"
@@ -77,7 +78,7 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 		defer close(marksCh)
 		select {
 		case studentId := <-studentIdCh:
-			var marks models.Marks
+			var marks []models.Mark
 			filter := bson.D{{"student_id", studentId}}
 			cursor, markFindErr := dbContext.Marks.Find(context.TODO(), filter)
 			if markFindErr != nil {
@@ -94,7 +95,8 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 				httpInternalError(w, cursorErr.Error())
 				return
 			}
-			marksCh <- marks.ToGetRequest()
+			markDto := mappers.MarkListToGetDto(marks)
+			marksCh <- markDto
 		}
 	}(studentCarnet)
 
@@ -109,18 +111,15 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
 	wg.Add(1)
-	go anyMark(id, &wg, ch)
+	go anyMarkAtStudents(id, &wg, ch)
 	if <-ch {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
+	close(ch)
 	wg.Wait()
-	hex, hexErr := primitive.ObjectIDFromHex(id)
-	if hexErr != nil {
-		log.Println(hexErr)
-		return
-	}
-	filter := bson.M{"_id": hex}
+	bsonId := utilities.BsonIdFormat(id)
+	filter := bson.M{"_id": bsonId}
 	var mark models.Mark
 	err := dbContext.Marks.FindOne(context.TODO(), filter).Decode(&mark)
 	if err != nil {
@@ -129,13 +128,11 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 	}
 	studentCarnet, studentErr := search.GetStudentCarnetById(mark.StudentId)
 	if studentErr != nil {
+	markDto, mapperErr := mappers.MarkToGetDto(mark)
+	if mapperErr != nil {
+		httpNotFoundError(w, mapperErr.Error())
 		return
 	}
-	teacherCarnet, teacherErr := search.GetTeacherCarnetById(mark.TeacherId)
-	if teacherErr != nil {
-		return
-	}
-	markDto := mark.ToGetRequest(studentCarnet, teacherCarnet)
 	utilities.WriteJson(w, http.StatusOK, markDto)
 }
 
@@ -145,7 +142,7 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
 	wg.Add(1)
-	go anyMark(id, &wg, ch)
+	go anyMarkAtStudents(id, &wg, ch)
 	if <-ch {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
@@ -163,22 +160,29 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 func updateMark(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
-	carnet := r.URL.Query().Get("Carnet")
+	id := r.URL.Query().Get("id")
 	wg.Add(1)
-	go anyMark(carnet, &wg, ch)
+	go anyMarks(id, &wg, ch)
 	if <-ch {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
+	close(ch)
 	wg.Wait()
-	var mark models.Mark
-	err := utilities.ReadJson(w, r, &mark)
+	var markDto dto.MarksUpdateRequest
+	err := utilities.ReadJson(w, r, &markDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		log.Println(err)
 		return
 	}
-	filter := bson.M{"carnet": carnet}
+	mark, mapperErr := mappers.UpdateDtoToMark(markDto, id)
+	if mapperErr != nil {
+		httpNotFoundError(w, mapperErr.Error())
+		return
+	}
+	bsonId := utilities.BsonIdFormat(id)
+	filter := bson.M{"_id": bsonId}
 	update := bson.M{"$set": mark}
 	_, err = dbContext.Marks.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -187,7 +191,16 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func anyMark(carnet string, wg *sync.WaitGroup, ch chan bool) {
+func anyMarks(id string, wg *sync.WaitGroup, ch chan bool) {
+	defer wg.Done()
+	bsonId := utilities.BsonIdFormat(id)
+	filter := bson.D{{"_id", bsonId}}
+	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})
+	if errors.Is(err, mongo.ErrNoDocuments) {
+	}
+}
+
+func anyMarkAtStudents(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	defer wg.Done()
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})
