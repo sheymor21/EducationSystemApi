@@ -18,9 +18,10 @@ type config struct {
 }
 
 type application struct {
-	config    config
-	logger    *log.Logger
-	validator *validator.Validate
+	config         config
+	swaggerSpecURL string
+	logger         *log.Logger
+	validator      *validator.Validate
 }
 
 func ListenServer() {
@@ -39,11 +40,18 @@ func ListenServer() {
 	defer database.CloseConnection(dbContext.Client)
 	addr := fmt.Sprintf(":%d", conf.port)
 
+	toURL, fileErr := utilities.FilePathToURL("./docs/swagger.json")
+	if fileErr != nil {
+		log.Fatal(fileErr)
+		return
+	}
+
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	app := &application{
-		config:    conf,
-		logger:    logger,
-		validator: validator.New(validator.WithRequiredStructEnabled()),
+		config:         conf,
+		logger:         logger,
+		swaggerSpecURL: toURL,
+		validator:      validator.New(validator.WithRequiredStructEnabled()),
 	}
 
 	srv := &http.Server{

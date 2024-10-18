@@ -15,6 +15,17 @@ import (
 	"sync"
 )
 
+// addStudent godoc
+// @Summary Add a student
+// @Description Add a new student to the database
+// @Tags student
+// @Accept  json
+// @Produce  json
+// @Param student body dto.StudentAddDto true "Add Student"
+// @Success 200
+// @Failure 400
+// @Failure 500
+// @Router /student [post]
 func addStudent(w http.ResponseWriter, r *http.Request) {
 	studentDto := dto.StudentAddDto{}
 	err := utilities.ReadJson(w, r, &studentDto)
@@ -37,6 +48,14 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// getStudents retrieves a list of students from the database and writes it as a JSON response.
+// @Summary Retrieves students
+// @Description Fetches a list of all students from the database and returns the data as JSON.
+// @Tags students
+// @Produce json
+// @Success 200 {array} models.Student
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /students [get]
 func getStudents(w http.ResponseWriter, r *http.Request) {
 	var student []models.Student
 	find, findErr := dbContext.Student.Find(context.TODO(), bson.M{})
@@ -54,6 +73,16 @@ func getStudents(w http.ResponseWriter, r *http.Request) {
 	utilities.WriteJson(w, http.StatusOK, student)
 }
 
+// getStudent godoc
+// @Summary Get student by carnet
+// @Description Retrieve a student's information from the database using their carnet
+// @Tags student
+// @Accept json
+// @Produce json
+// @Param Carnet query string true "Student Carnet"
+// @Success 200 {object} models.Student
+// @Failure 404 {object} string "Student not found"
+// @Router /student [get]
 func getStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	student, err := getStudentByCarnet(dbContext, carnet)
@@ -65,6 +94,19 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// putStudent godoc
+// @Summary Update a student
+// @Description Update an existing student's information in the database
+// @Tags student
+// @Accept json
+// @Produce json
+// @Param Carnet query string true "Student Carnet"
+// @Param student body models.Student true "Update Student"
+// @Success 200 {object} models.Student
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Router /student [put]
 func putStudent(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
@@ -95,6 +137,17 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// deleteStudent godoc
+// @Summary Delete a student
+// @Description Delete a student from the database using their carnet
+// @Tags student
+// @Accept  json
+// @Produce  json
+// @Param Carnet query string true "Student Carnet"
+// @Success 200 "Student deleted successfully"
+// @Failure 404 {object} string "Student not found"
+// @Failure 500 {object} string "Internal server error"
+// @Router /student [delete]
 func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
