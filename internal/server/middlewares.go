@@ -3,7 +3,7 @@ package server
 import (
 	"calificationApi/internal/dto"
 	"calificationApi/internal/utilities"
-	"calificationApi/validations"
+	"calificationApi/internal/validations"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"net/http"
