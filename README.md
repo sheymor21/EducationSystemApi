@@ -30,6 +30,8 @@ For run the project use:
 go run cmd/api/main.go -DB_U (your db user) -DB_P (your db password)
 ~~~
 
+You can access the API UI by opening the root URL (`/`) of the running server.
+
 # Author
 
 - [sheymor21](https://github.com/sheymor21)
