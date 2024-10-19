@@ -30,6 +30,11 @@ For run the project use:
 go run cmd/api/main.go -DB_U (your db user) -DB_P (your db password)
 ~~~
 
+If you prefer create a **.env** file, you already have a **.env.example** at the project with that only need to run
+~~~
+go run cmd/api/main.go
+~~~
+
 You can access the API UI by opening the root URL (`/`) of the running server.
 
 # Author
