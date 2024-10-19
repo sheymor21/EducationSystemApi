@@ -88,6 +88,7 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 	student, err := getStudentByCarnet(dbContext, carnet)
 	if err != nil {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
+		return
 	} else {
 
 		utilities.WriteJson(w, http.StatusOK, student)
