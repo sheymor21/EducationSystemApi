@@ -1,10 +1,11 @@
 package database
 
 import (
+	"calificationApi/internal/utilities"
 	"context"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"sync"
 )
 
@@ -17,6 +18,7 @@ type MongoConfig struct {
 	DbUri    string
 	Username string
 	Password string
+	Logger   *logrus.Logger
 }
 
 type MongoContext struct {
@@ -35,6 +37,7 @@ func SetMongoConfig(data MongoConfig) {
 	mc.DbUri = data.DbUri
 	mc.Username = data.Username
 	mc.Password = data.Password
+	mc.Logger = data.Logger
 }
 
 func Run() {
@@ -47,12 +50,12 @@ func Run() {
 
 		client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mc.DbUri).SetAuth(auth))
 		if err != nil {
-			log.Fatal(err)
+			mc.Logger.Fatal(err)
 		}
 
 		err = client.Ping(context.TODO(), nil)
 		if err != nil {
-			panic(err.Error())
+			mc.Logger.Fatal(err.Error())
 		}
 
 		db := client.Database(mc.DbName)
@@ -68,6 +71,6 @@ func Run() {
 func CloseConnection(client *mongo.Client) {
 	err := client.Disconnect(context.TODO())
 	if err != nil {
-		log.Fatal(err)
+		utilities.Log.Fatal(err)
 	}
 }

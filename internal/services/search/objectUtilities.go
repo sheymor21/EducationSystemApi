@@ -3,11 +3,11 @@ package search
 import (
 	"calificationApi/internal/database"
 	"calificationApi/internal/server/customErrors"
+	"calificationApi/internal/utilities"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 )
 
 var dbContext = database.GetMongoContext()
@@ -35,7 +35,7 @@ func GetTeacherCarnetById(id string) (string, error) {
 	}
 	hex, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		return "", err
 	}
 	filter := bson.D{{"_id", hex}}
@@ -71,7 +71,7 @@ func GetStudentCarnetById(id string) (string, *customErrors.NotFoundMongoError) 
 
 	hex, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 	}
 
 	filter := bson.D{{"_id", hex}}

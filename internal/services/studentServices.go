@@ -10,7 +10,6 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -31,7 +30,7 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &studentDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	student := models.Student{
@@ -43,7 +42,7 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = dbContext.Student.InsertOne(context.TODO(), student)
 	if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		httpInternalError(w, err.Error())
 	}
 }
@@ -56,17 +55,17 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} models.Student
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /students [get]
-func getStudents(w http.ResponseWriter, r *http.Request) {
+func getStudents(w http.ResponseWriter) {
 	var student []models.Student
 	find, findErr := dbContext.Student.Find(context.TODO(), bson.M{})
 	if findErr != nil {
-		log.Println(findErr)
+		utilities.Log.Println(findErr)
 		httpInternalError(w, findErr.Error())
 		return
 	}
 	decodeErr := find.All(context.TODO(), &student)
 	if decodeErr != nil {
-		log.Println(decodeErr)
+		utilities.Log.Println(decodeErr)
 		httpInternalError(w, decodeErr.Error())
 		return
 	}
@@ -125,14 +124,14 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &student)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	filter := bson.D{{"carnet", carnet}}
 	update := bson.D{{"$set", student}}
 	_, err = dbContext.Student.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		httpInternalError(w, err.Error())
 	}
 
@@ -164,7 +163,7 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	filter := bson.D{{"carnet", carnet}}
 	_, err := dbContext.Student.DeleteOne(context.TODO(), filter)
 	if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		httpInternalError(w, err.Error())
 		return
 	}
@@ -190,7 +189,7 @@ func anyStudent(carnet string, wg *sync.WaitGroup, ch chan bool) {
 		ch <- false
 	} else if err != nil {
 		ch <- false
-		log.Println(err)
+		utilities.Log.Println(err)
 	} else {
 		ch <- true
 	}

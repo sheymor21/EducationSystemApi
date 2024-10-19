@@ -4,8 +4,8 @@ import (
 	"calificationApi/internal/dto"
 	"calificationApi/internal/models"
 	"calificationApi/internal/services/search"
+	"calificationApi/internal/utilities"
 	"errors"
-	"log"
 )
 
 func MarkToGetDto(m models.Mark) (dto.MarksGetRequest, error) {
@@ -36,7 +36,7 @@ func MarkListToGetDto(marks []models.Mark) []dto.MarksGetRequest {
 	for _, m := range marks {
 		mark, err := MarkToGetDto(m)
 		if err != nil {
-			log.Println(err)
+			utilities.Log.Println(err)
 			return nil
 		}
 		mapper = append(mapper, mark)

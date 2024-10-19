@@ -8,7 +8,6 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -28,7 +27,7 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
@@ -52,7 +51,7 @@ func updateTeacher(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	filter := bson.M{"carnet": teacher.Carnet}
@@ -119,16 +118,16 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "Internal server error"
 // @Router /teachers [get]
 // @Tags teachers
-func getTeachers(w http.ResponseWriter, r *http.Request) {
+func getTeachers(w http.ResponseWriter) {
 	var teachers []models.Teacher
 	find, findErr := dbContext.Teachers.Find(context.TODO(), bson.M{})
 	if findErr != nil {
-		log.Println(findErr)
+		utilities.Log.Println(findErr)
 		return
 	}
 	decodeErr := find.All(context.TODO(), &teachers)
 	if decodeErr != nil {
-		log.Println(decodeErr)
+		utilities.Log.Println(decodeErr)
 		return
 	}
 	utilities.WriteJson(w, http.StatusOK, teachers)
@@ -141,7 +140,7 @@ func anyTeacher(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		ch <- false
 	} else if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		ch <- false
 	} else {
 		ch <- true

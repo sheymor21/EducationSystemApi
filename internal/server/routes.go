@@ -2,9 +2,9 @@ package server
 
 import (
 	"calificationApi/internal/services"
+	"calificationApi/internal/utilities"
 	"fmt"
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
-	"log"
 	"net/http"
 )
 
@@ -16,6 +16,7 @@ func (app *application) Routes() *http.ServeMux {
 	teacherHandler := http.HandlerFunc(services.HttpTeacherHandler)
 	teachersHandler := http.HandlerFunc(services.HttpTeachersHandler)
 	markHandler := http.HandlerFunc(services.HttpMarkHandler)
+	marksHandler := http.HandlerFunc(services.HttpMarksHandler)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		htmlContent, scalarErr := scalar.ApiReferenceHTML(&scalar.Options{
@@ -25,23 +26,29 @@ func (app *application) Routes() *http.ServeMux {
 			},
 			DarkMode: true,
 		})
-
 		if scalarErr != nil {
 			fmt.Printf("%v", scalarErr)
 		}
 
 		_, printErr := fmt.Fprintln(w, htmlContent)
 		if printErr != nil {
-			log.Println(printErr)
+			utilities.Log.Println(printErr)
 			return
 		}
 	})
 
-	mux.Handle("/student", middlewareStudentValidator(studentHandler, app.validator))
-	mux.Handle("/students", studentsHandler)
-	mux.Handle("/teacher", middlewareTeacherValidator(teacherHandler, app.validator))
-	mux.Handle("/teachers", teachersHandler)
-	mux.Handle("/mark", middlewareMarkValidator(markHandler, app.validator))
-	mux.HandleFunc("/marks", services.HttpMarksHandler)
+	studentHandlerChain := loggerMiddleware(middlewareStudentValidator(studentHandler, app.validator))
+	studentsHandlerChain := loggerMiddleware(studentsHandler)
+	teacherHandlerChain := loggerMiddleware(middlewareTeacherValidator(teacherHandler, app.validator))
+	teachersHandlerChain := loggerMiddleware(teachersHandler)
+	markHandlerChain := loggerMiddleware(middlewareMarkValidator(markHandler, app.validator))
+	marksHandlerChain := loggerMiddleware(marksHandler)
+
+	mux.Handle("/student", studentHandlerChain)
+	mux.Handle("/students", studentsHandlerChain)
+	mux.Handle("/teacher", teacherHandlerChain)
+	mux.Handle("/teachers", teachersHandlerChain)
+	mux.Handle("/mark", markHandlerChain)
+	mux.Handle("/marks", marksHandlerChain)
 	return mux
 }

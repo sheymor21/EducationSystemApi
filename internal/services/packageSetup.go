@@ -10,7 +10,7 @@ var dbContext = database.GetMongoContext()
 func HttpStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getStudents(w, r)
+		getStudents(w)
 	default:
 		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
 	}
@@ -19,7 +19,7 @@ func HttpStudentsHandler(w http.ResponseWriter, r *http.Request) {
 func HttpTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		getTeachers(w, r)
+		getTeachers(w)
 	default:
 		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
 	}

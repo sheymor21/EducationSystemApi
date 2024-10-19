@@ -11,7 +11,6 @@ import (
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
 	"net/http"
 	"sync"
 )
@@ -30,7 +29,7 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &input)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	teacherId, teacherErr := search.GetTeacherIdByCarnet(input.TeacherCarnet)
@@ -216,7 +215,7 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &markDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		log.Println(err)
+		utilities.Log.Println(err)
 		return
 	}
 	mark, mapperErr := mappers.UpdateDtoToMark(markDto, id)
@@ -240,6 +239,12 @@ func anyMarks(id string, wg *sync.WaitGroup, ch chan bool) {
 	filter := bson.D{{"_id", bsonId}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
+		ch <- false
+	} else if err != nil {
+		utilities.Log.Println(err)
+		ch <- false
+	} else {
+		ch <- true
 	}
 }
 
@@ -250,7 +255,7 @@ func anyMarkAtStudents(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		ch <- false
 	} else if err != nil {
-		log.Println(err)
+		utilities.Log.Println(err)
 		ch <- false
 	} else {
 		ch <- true

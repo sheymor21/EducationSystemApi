@@ -6,9 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-playground/validator/v10"
-	"log"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -20,7 +18,6 @@ type config struct {
 type application struct {
 	config         config
 	swaggerSpecURL string
-	logger         *log.Logger
 	validator      *validator.Validate
 }
 
@@ -42,14 +39,12 @@ func ListenServer() {
 
 	toURL, fileErr := utilities.FilePathToURL("./docs/swagger.json")
 	if fileErr != nil {
-		log.Fatal(fileErr)
+		utilities.Log.Fatal(fileErr)
 		return
 	}
 
-	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 	app := &application{
 		config:         conf,
-		logger:         logger,
 		swaggerSpecURL: toURL,
 		validator:      validator.New(validator.WithRequiredStructEnabled()),
 	}
@@ -62,7 +57,7 @@ func ListenServer() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Printf("Starting server on %s in %s environmnent", addr, conf.env)
+	utilities.Log.Infof("Starting server on %s in %s environmnent", addr, conf.env)
 	err := srv.ListenAndServe()
 	if err != nil {
 		return
