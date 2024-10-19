@@ -6,7 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -31,6 +34,23 @@ func ListenServer() {
 	flag.UintVar(&conf.port, "port", 8080, "port to listen on")
 	flag.StringVar(&conf.env, "env", "dev", "environment to use dev|prod|test")
 	flag.Parse()
+
+	if mc.Username == "" && mc.Password == "" {
+		envErr := godotenv.Load(".env")
+		if envErr != nil {
+			utilities.Log.Fatal(envErr)
+		}
+		mc.Username = os.Getenv("DB_U")
+		mc.Password = os.Getenv("DB_P")
+		dbName := os.Getenv("DB_NAME")
+		dbUri := os.Getenv("DB_URI")
+		if dbName != "" {
+			mc.DbName = dbName
+		} else if dbUri != "" {
+			mc.DbUri = dbUri
+		}
+	}
+
 	database.SetMongoConfig(mc)
 	database.Run()
 	dbContext := database.GetMongoContext()
@@ -57,7 +77,7 @@ func ListenServer() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	utilities.Log.Infof("Starting server on %s in %s environmnent", addr, conf.env)
+	log.Printf("Starting server on %s in %s environmnent", addr, conf.env)
 	err := srv.ListenAndServe()
 	if err != nil {
 		return
