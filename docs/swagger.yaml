@@ -1,0 +1,529 @@
+definitions:
+  MarkAddRequest:
+    properties:
+      grade:
+        type: string
+      mark:
+        type: string
+      semester:
+        type: string
+      student_carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      teacher_carnet:
+        type: string
+    required:
+    - grade
+    - mark
+    - semester
+    - student_carnet
+    - teacher_carnet
+    type: object
+  MarksGetRequest:
+    properties:
+      grade:
+        type: string
+      id:
+        type: string
+      mark:
+        type: string
+      semester:
+        type: string
+      student_carnet:
+        type: string
+      teacher_carnet:
+        type: string
+    type: object
+  MarksUpdateRequest:
+    properties:
+      grade:
+        type: string
+      mark:
+        type: string
+      semester:
+        type: string
+      studentCarnet:
+        type: string
+      teacherCarnet:
+        type: string
+    type: object
+  StudentAddRequest:
+    properties:
+      age:
+        maximum: 100
+        minimum: 1
+        type: integer
+      carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      classroom:
+        maxLength: 4
+        minLength: 2
+        type: string
+      firstName:
+        maxLength: 20
+        minLength: 3
+        type: string
+      lastName:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - age
+    - carnet
+    - classroom
+    - firstName
+    - lastName
+    type: object
+  UserLogin:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.Student:
+    properties:
+      age:
+        type: integer
+      carnet:
+        type: string
+      classroom:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+  models.Teacher:
+    properties:
+      age:
+        type: integer
+      carnet:
+        type: string
+      classroom:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+    type: object
+info:
+  contact:
+    email: joseacvz81@gmail.com
+    name: Jose Armando Coronel Vasquez
+  description: This is an API for managing marks
+  termsOfService: http://swagger.io/terms/
+  title: Marks Api
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Get JWT by Login with username and password
+      parameters:
+      - description: user login
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/UserLogin'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: JWT
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get JWT by Login with username and password
+      tags:
+      - login
+  /mark:
+    delete:
+      description: Deletes a mark entry from the database using the provided mark
+        ID
+      parameters:
+      - description: Mark ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Successfully deleted mark
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete a mark
+      tags:
+      - mark
+    get:
+      description: Fetches a mark object based on the provided student ID
+      parameters:
+      - description: Student ID
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Successfully retrieved mark
+          schema:
+            $ref: '#/definitions/MarksGetRequest'
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve a mark
+      tags:
+      - marks
+    post:
+      description: Creates a new mark entry with student and teacher details
+      parameters:
+      - description: Mark Add Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/MarkAddRequest'
+      responses:
+        "200":
+          description: Successfully added mark
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Add a new mark
+      tags:
+      - mark
+  /marks:
+    get:
+      description: Finds and returns the marks of a student using their carnet number.
+      parameters:
+      - description: Student Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/MarksGetRequest'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieves student's marks by carnet
+      tags:
+      - marks
+    put:
+      description: Modifies an existing mark entry using the supplied ID and mark
+        details
+      parameters:
+      - description: Mark ID
+        in: query
+        name: id
+        required: true
+        type: string
+      - description: Marks Update Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/MarksUpdateRequest'
+      responses:
+        "200":
+          description: Successfully updated mark
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update a mark
+      tags:
+      - mark
+  /student:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a student from the database using their carnet
+      parameters:
+      - description: Student Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Student deleted successfully
+        "404":
+          description: Student not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a student
+      tags:
+      - student
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a student's information from the database using their
+        carnet
+      parameters:
+      - description: Student Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "404":
+          description: Student not found
+          schema:
+            type: string
+      summary: Get student by carnet
+      tags:
+      - student
+    post:
+      consumes:
+      - application/json
+      description: Add a new student to the database
+      parameters:
+      - description: Add Student
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/StudentAddRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Add a student
+      tags:
+      - student
+    put:
+      consumes:
+      - application/json
+      description: Update an existing student's information in the database
+      parameters:
+      - description: Student Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      - description: Update Student
+        in: body
+        name: student
+        required: true
+        schema:
+          $ref: '#/definitions/models.Student'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Student'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Update a student
+      tags:
+      - student
+  /students:
+    get:
+      description: Fetches a list of all students from the database and returns the
+        data as JSON.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Student'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieves students
+      tags:
+      - students
+  /teacher:
+    delete:
+      description: Deletes an existing teacher record from the database using the
+        "Carnet" query parameter.
+      parameters:
+      - description: Teacher Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a teacher
+      tags:
+      - teacher
+    get:
+      description: Fetches the information of a teacher from the database using the
+        "Carnet" query parameter.
+      parameters:
+      - description: Teacher Carnet
+        in: query
+        name: Carnet
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a teacher's details
+      tags:
+      - teacher
+    post:
+      consumes:
+      - application/json
+      description: Inserts a new teacher record to the database
+      parameters:
+      - description: New Teacher
+        in: body
+        name: teacher
+        required: true
+        schema:
+          $ref: '#/definitions/models.Teacher'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add a new teacher
+      tags:
+      - teacher
+    put:
+      consumes:
+      - application/json
+      description: Updates the information of an existing teacher in the database
+      parameters:
+      - description: Updated Teacher
+        in: body
+        name: teacher
+        required: true
+        schema:
+          $ref: '#/definitions/models.Teacher'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Teacher'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an existing teacher
+      tags:
+      - teacher
+  /teachers:
+    get:
+      description: Fetch all teacher records from the database and return them as
+        a JSON payload
+      responses:
+        "200":
+          description: List of teachers
+          schema:
+            items:
+              $ref: '#/definitions/models.Teacher'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieve all teachers
+      tags:
+      - teachers
+securityDefinitions:
+  BearerAuth:
+    description: hi , how are you?
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
