@@ -1,4 +1,4 @@
-# EducationSystemApi
+# SchoolManagerApi
 
 Simple API for School management using Golang
 
