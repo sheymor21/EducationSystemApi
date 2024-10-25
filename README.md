@@ -1,6 +1,6 @@
 # EducationSystemApi
 
-Simple API for Booking management using .Net core and Docker
+Simple API for School management using Golang
 
 # Dependencies
 
