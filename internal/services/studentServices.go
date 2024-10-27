@@ -41,17 +41,32 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		Age:       studentDto.Age,
 		Classroom: studentDto.Classroom,
 	}
-	_, err = dbContext.Student.InsertOne(context.TODO(), student)
-	if err != nil {
-		utilities.Log.Println(err)
-		httpInternalError(w, err.Error())
 	_, insertStudentErr := dbContext.Student.InsertOne(context.TODO(), student)
 	if insertStudentErr != nil {
 		utilities.Log.Errorln(insertStudentErr)
 		httpInternalError(w, insertStudentErr.Error())
 		return
 	}
+	userName := fmt.Sprintf("%s %s", studentDto.FirstName, studentDto.LastName)
+	password := fmt.Sprintf("%s-%s", student.Carnet[len(student.Carnet)-3:], studentDto.LastName)
+	user := models.User{
+		Carnet:   student.Carnet,
+		Username: userName,
+		Password: password,
 	}
+	_, insertUserErr := dbContext.Users.InsertOne(context.TODO(), user)
+	if insertUserErr != nil {
+		utilities.Log.Errorln(insertUserErr)
+		_, deleteErr := dbContext.Student.DeleteOne(context.TODO(), bson.D{{"carnet", student.Carnet}})
+		if deleteErr != nil {
+			utilities.Log.Errorln(deleteErr)
+			httpInternalError(w, insertUserErr.Error())
+			return
+		}
+		httpInternalError(w, insertUserErr.Error())
+		return
+	}
+
 }
 
 // getStudents retrieves a list of students from the database and writes it as a JSON response.

@@ -3,7 +3,6 @@ package database
 import (
 	"SchoolManagerApi/internal/utilities"
 	"context"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
@@ -24,6 +23,7 @@ type MongoContext struct {
 	Student  *mongo.Collection
 	Teachers *mongo.Collection
 	Marks    *mongo.Collection
+	Users    *mongo.Collection
 	Client   *mongo.Client
 }
 
@@ -36,7 +36,6 @@ func SetMongoConfig(data MongoConfig) {
 	mc.DbUri = data.DbUri
 	mc.Username = data.Username
 	mc.Password = data.Password
-	mc.Logger = data.Logger
 }
 
 func Run() {
@@ -62,6 +61,7 @@ func Run() {
 			Student:  db.Collection("Student"),
 			Teachers: db.Collection("Teachers"),
 			Marks:    db.Collection("Marks"),
+			Users:    db.Collection("Users"),
 			Client:   client,
 		}
 	})
