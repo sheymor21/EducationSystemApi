@@ -17,6 +17,7 @@ func (app *application) Routes() *http.ServeMux {
 	teachersHandler := http.HandlerFunc(services.HttpTeachersHandler)
 	markHandler := http.HandlerFunc(services.HttpMarkHandler)
 	marksHandler := http.HandlerFunc(services.HttpMarksHandler)
+	loginHandler := http.HandlerFunc(services.Login)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		htmlContent, scalarErr := scalar.ApiReferenceHTML(&scalar.Options{
@@ -38,12 +39,12 @@ func (app *application) Routes() *http.ServeMux {
 		}
 	})
 
-	studentHandlerChain := loggerMiddleware(middlewareStudentValidator(studentHandler, app.validator))
-	studentsHandlerChain := loggerMiddleware(studentsHandler)
-	teacherHandlerChain := loggerMiddleware(middlewareTeacherValidator(teacherHandler, app.validator))
-	teachersHandlerChain := loggerMiddleware(teachersHandler)
-	markHandlerChain := loggerMiddleware(middlewareMarkValidator(markHandler, app.validator))
-	marksHandlerChain := loggerMiddleware(marksHandler)
+	studentHandlerChain := loginMiddleware(loggerMiddleware(middlewareStudentValidator(studentHandler, app.validator)))
+	studentsHandlerChain := loginMiddleware(loggerMiddleware(loggerMiddleware(loggerMiddleware(studentsHandler))))
+	teacherHandlerChain := loginMiddleware(loggerMiddleware(middlewareTeacherValidator(teacherHandler, app.validator)))
+	teachersHandlerChain := loginMiddleware(loginMiddleware(loggerMiddleware(teachersHandler)))
+	markHandlerChain := loginMiddleware(loggerMiddleware(middlewareMarkValidator(markHandler, app.validator)))
+	marksHandlerChain := loginMiddleware(loggerMiddleware(loggerMiddleware(marksHandler)))
 
 	mux.Handle("/student", studentHandlerChain)
 	mux.Handle("/students", studentsHandlerChain)
@@ -51,5 +52,6 @@ func (app *application) Routes() *http.ServeMux {
 	mux.Handle("/teachers", teachersHandlerChain)
 	mux.Handle("/mark", markHandlerChain)
 	mux.Handle("/marks", marksHandlerChain)
+	mux.Handle("/login", loginHandler)
 	return mux
 }

@@ -73,3 +73,20 @@ func loggerMiddleware(next http.Handler) http.Handler {
 
 	})
 }
+
+func loginMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			if r.URL.Path != "/login" {
+				validationErr := validations.LoginValidator(r)
+				if validationErr != nil {
+					utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
+					return
+				}
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+
+}

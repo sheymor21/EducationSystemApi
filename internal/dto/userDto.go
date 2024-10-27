@@ -7,6 +7,6 @@ type UserAddRequest struct {
 }
 
 type UserLoginRequest struct {
-	Username string `json:"username"`
+	Carnet   string `json:"carnet"`
 	Password string `json:"password"`
 } // @name UserLogin

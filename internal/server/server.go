@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -36,11 +35,19 @@ func ListenServer() {
 	flag.StringVar(&conf.env, "env", "dev", "environment to use dev|prod|test")
 	flag.Parse()
 
+	envErr := godotenv.Load(".env")
+	if envErr != nil {
+		utilities.Log.Errorln("Error loading .env file")
+	}
+
 	if mc.Username == "" && mc.Password == "" {
-		envErr := godotenv.Load(".env")
-		if envErr != nil {
-			utilities.Log.Fatal(envErr)
+		key := os.Getenv("SECRET_KEY")
+		if key != "" {
+			validations.SetSecretKey([]byte(key))
+		} else {
+			utilities.Log.Fatalln("Empty Secret Key")
 		}
+
 		mc.Username = os.Getenv("DB_U")
 		mc.Password = os.Getenv("DB_P")
 		dbName := os.Getenv("DB_NAME")

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"sync"
 )
@@ -49,10 +50,16 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	}
 	userName := fmt.Sprintf("%s %s", studentDto.FirstName, studentDto.LastName)
 	password := fmt.Sprintf("%s-%s", student.Carnet[len(student.Carnet)-3:], studentDto.LastName)
+	hashPassword, hashErr := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if hashErr != nil {
+		utilities.Log.Errorln(hashErr)
+		httpInternalError(w, "Internal server error")
+		return
+	}
 	user := models.User{
 		Carnet:   student.Carnet,
 		Username: userName,
-		Password: password,
+		Password: string(hashPassword),
 	}
 	_, insertUserErr := dbContext.Users.InsertOne(context.TODO(), user)
 	if insertUserErr != nil {
