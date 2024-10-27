@@ -8,6 +8,7 @@ import (
 	"SchoolManagerApi/internal/utilities"
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
@@ -44,6 +45,12 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utilities.Log.Println(err)
 		httpInternalError(w, err.Error())
+	_, insertStudentErr := dbContext.Student.InsertOne(context.TODO(), student)
+	if insertStudentErr != nil {
+		utilities.Log.Errorln(insertStudentErr)
+		httpInternalError(w, insertStudentErr.Error())
+		return
+	}
 	}
 }
 
