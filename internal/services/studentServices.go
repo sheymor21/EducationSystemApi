@@ -20,17 +20,17 @@ import (
 // @Tags student
 // @Accept  json
 // @Produce  json
-// @Param student body dto.StudentAddDto true "Add Student"
+// @Param student body StudentAddRequest true "Add Student"
 // @Success 200
 // @Failure 400
 // @Failure 500
 // @Router /student [post]
 func addStudent(w http.ResponseWriter, r *http.Request) {
 	studentDto := dto.StudentAddDto{}
-	err := utilities.ReadJson(w, r, &studentDto)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+	jsonErr := utilities.ReadJson(w, r, &studentDto)
+	if jsonErr != nil {
+		httpInternalError(w, jsonErr.Error())
+		utilities.Log.Errorln(jsonErr)
 		return
 	}
 	student := models.Student{

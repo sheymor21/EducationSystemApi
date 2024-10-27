@@ -6,4 +6,4 @@ type StudentAddDto struct {
 	LastName  string `json:"lastName" validate:"required,min=3,max=20"`
 	Age       uint8  `json:"age" validate:"required,min=1,max=100"`
 	Classroom string `json:"classroom" validate:"required,min=2,max=4"`
-}
+} // @name StudentAddRequest

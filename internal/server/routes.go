@@ -22,9 +22,10 @@ func (app *application) Routes() *http.ServeMux {
 		htmlContent, scalarErr := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: app.swaggerSpecURL,
 			CustomOptions: scalar.CustomOptions{
-				PageTitle: "Simple API",
+				PageTitle: "SchoolManager",
 			},
-			DarkMode: true,
+			HideDownloadButton: true,
+			DarkMode:           true,
 		})
 		if scalarErr != nil {
 			utilities.Log.Warnln(scalarErr.Error())

@@ -6,7 +6,7 @@ type MarkAddRequest struct {
 	Grade         string `json:"grade" validate:"required"`
 	Mark          string `json:"mark" validate:"required"`
 	Semester      string `json:"semester" validate:"required"`
-}
+} // @name MarkAddRequest
 
 type MarksGetRequest struct {
 	ID            string `bson:"_id,omitempty"`
@@ -15,7 +15,7 @@ type MarksGetRequest struct {
 	Grade         string `json:"grade,omitempty"`
 	Mark          string `json:"mark,omitempty"`
 	Semester      string `json:"semester,omitempty"`
-}
+} // @name MarksGetRequest
 
 type MarksUpdateRequest struct {
 	StudentCarnet string
@@ -23,4 +23,4 @@ type MarksUpdateRequest struct {
 	Grade         string
 	Mark          string
 	Semester      string
-}
+} // @name MarksUpdateRequest
