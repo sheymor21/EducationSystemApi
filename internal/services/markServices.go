@@ -1,12 +1,12 @@
 package services
 
 import (
-	"calificationApi/internal/dto"
-	"calificationApi/internal/mappers"
-	"calificationApi/internal/models"
-	"calificationApi/internal/server/customErrors"
-	"calificationApi/internal/services/search"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/mappers"
+	"SchoolManagerApi/internal/models"
+	"SchoolManagerApi/internal/server/customErrors"
+	"SchoolManagerApi/internal/services/search"
+	"SchoolManagerApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,7 +29,7 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &input)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return
 	}
 	teacherId, teacherErr := search.GetTeacherIdByCarnet(input.TeacherCarnet)
@@ -215,7 +215,7 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &markDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return
 	}
 	mark, mapperErr := mappers.UpdateDtoToMark(markDto, id)
@@ -241,7 +241,7 @@ func anyMarks(id string, wg *sync.WaitGroup, ch chan bool) {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		ch <- false
 	} else if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		ch <- false
 	} else {
 		ch <- true
@@ -255,7 +255,7 @@ func anyMarkAtStudents(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		ch <- false
 	} else if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		ch <- false
 	} else {
 		ch <- true

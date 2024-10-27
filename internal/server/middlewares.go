@@ -1,9 +1,9 @@
 package server
 
 import (
-	"calificationApi/internal/dto"
-	"calificationApi/internal/utilities"
-	"calificationApi/internal/validations"
+	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/utilities"
+	"SchoolManagerApi/internal/validations"
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -69,7 +69,7 @@ func loggerMiddleware(next http.Handler) http.Handler {
 			"method":   r.Method,
 			"path":     r.URL.Path,
 			"duration": time.Since(start),
-		}).Info("Completed request")
+		}).Infoln("Completed request")
 
 	})
 }

@@ -1,8 +1,9 @@
 package server
 
 import (
-	"calificationApi/internal/database"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/database"
+	"SchoolManagerApi/internal/utilities"
+	"SchoolManagerApi/internal/validations"
 	"flag"
 	"fmt"
 	"github.com/go-playground/validator/v10"
@@ -59,7 +60,7 @@ func ListenServer() {
 
 	toURL, fileErr := utilities.FilePathToURL("./docs/swagger.json")
 	if fileErr != nil {
-		utilities.Log.Fatal(fileErr)
+		utilities.Log.Errorln(fileErr)
 		return
 	}
 
@@ -77,9 +78,10 @@ func ListenServer() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	log.Printf("Starting server on %s in %s environmnent", addr, conf.env)
+	utilities.Log.Infof("Starting server on %s in %s environment", addr, conf.env)
 	err := srv.ListenAndServe()
 	if err != nil {
+		utilities.Log.Fatalf("Error starting server: %s", err)
 		return
 	}
 }

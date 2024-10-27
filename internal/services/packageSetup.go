@@ -1,7 +1,7 @@
 package services
 
 import (
-	"calificationApi/internal/database"
+	"SchoolManagerApi/internal/database"
 	"net/http"
 )
 

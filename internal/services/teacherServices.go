@@ -1,9 +1,9 @@
 package services
 
 import (
-	"calificationApi/internal/models"
-	"calificationApi/internal/server/customErrors"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/models"
+	"SchoolManagerApi/internal/server/customErrors"
+	"SchoolManagerApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,7 +27,7 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return
 	}
 	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
@@ -51,7 +51,7 @@ func updateTeacher(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return
 	}
 	filter := bson.M{"carnet": teacher.Carnet}
@@ -122,16 +122,17 @@ func getTeachers(w http.ResponseWriter) {
 	var teachers []models.Teacher
 	find, findErr := dbContext.Teachers.Find(context.TODO(), bson.M{})
 	if findErr != nil {
-		utilities.Log.Println(findErr)
+		utilities.Log.Errorln(findErr)
 		return
 	}
 	decodeErr := find.All(context.TODO(), &teachers)
 	if decodeErr != nil {
-		utilities.Log.Println(decodeErr)
+		utilities.Log.Errorln(decodeErr)
 		return
 	}
 	utilities.WriteJson(w, http.StatusOK, teachers)
 }
+
 func anyTeacher(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	defer wg.Done()
 	defer close(ch)
@@ -140,7 +141,7 @@ func anyTeacher(carnet string, wg *sync.WaitGroup, ch chan bool) {
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		ch <- false
 	} else if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		ch <- false
 	} else {
 		ch <- true

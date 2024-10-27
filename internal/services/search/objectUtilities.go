@@ -1,9 +1,9 @@
 package search
 
 import (
-	"calificationApi/internal/database"
-	"calificationApi/internal/server/customErrors"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/database"
+	"SchoolManagerApi/internal/server/customErrors"
+	"SchoolManagerApi/internal/utilities"
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -35,7 +35,7 @@ func GetTeacherCarnetById(id string) (string, error) {
 	}
 	hex, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return "", err
 	}
 	filter := bson.D{{"_id", hex}}
@@ -71,7 +71,7 @@ func GetStudentCarnetById(id string) (string, *customErrors.NotFoundMongoError) 
 
 	hex, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 	}
 
 	filter := bson.D{{"_id", hex}}

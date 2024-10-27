@@ -1,7 +1,7 @@
 package database
 
 import (
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/utilities"
 	"context"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,7 +18,6 @@ type MongoConfig struct {
 	DbUri    string
 	Username string
 	Password string
-	Logger   *logrus.Logger
 }
 
 type MongoContext struct {
@@ -50,12 +49,12 @@ func Run() {
 
 		client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mc.DbUri).SetAuth(auth))
 		if err != nil {
-			mc.Logger.Fatal(err)
+			utilities.Log.Fatalln(err)
 		}
 
 		err = client.Ping(context.TODO(), nil)
 		if err != nil {
-			mc.Logger.Fatal(err.Error())
+			utilities.Log.Fatalln(err.Error())
 		}
 
 		db := client.Database(mc.DbName)
@@ -71,6 +70,6 @@ func Run() {
 func CloseConnection(client *mongo.Client) {
 	err := client.Disconnect(context.TODO())
 	if err != nil {
-		utilities.Log.Fatal(err)
+		utilities.Log.Fatalln(err)
 	}
 }

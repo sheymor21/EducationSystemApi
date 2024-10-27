@@ -1,4 +1,4 @@
-module calificationApi
+module SchoolManagerApi
 
 go 1.22.4
 

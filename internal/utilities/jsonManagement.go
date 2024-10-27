@@ -48,14 +48,14 @@ func ReadJson(w http.ResponseWriter, r *http.Request, mapper any) error {
 func WriteJson(w http.ResponseWriter, status int, data any) {
 	indent, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
-		Log.Error(err)
+		Log.Errorln(err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(status)
 	_, err = w.Write(indent)
 	if err != nil {
-		Log.Error(err)
+		Log.Errorln(err)
 		return
 	}
 }
@@ -69,17 +69,17 @@ func WriteJsonError(w http.ResponseWriter, status int, msg interface{}) {
 	case string:
 		envelope = envelopeMsg{Error: msg.(string)}
 	default:
-		Log.Error(errors.New("invalid type"))
+		Log.Errorln(errors.New("invalid type"))
 	}
 	indent, err := json.MarshalIndent(envelope, "", "\t")
 	if err != nil {
-		Log.Fatal(err)
+		Log.Fatalln(err)
 	}
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(status)
 	_, err = w.Write(indent)
 	if err != nil {
-		Log.Fatal(err)
+		Log.Fatalln(err)
 	}
 }
 

@@ -1,11 +1,11 @@
 package services
 
 import (
-	"calificationApi/internal/database"
-	"calificationApi/internal/dto"
-	"calificationApi/internal/models"
-	"calificationApi/internal/server/customErrors"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/database"
+	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/models"
+	"SchoolManagerApi/internal/server/customErrors"
+	"SchoolManagerApi/internal/utilities"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -59,13 +59,13 @@ func getStudents(w http.ResponseWriter) {
 	var student []models.Student
 	find, findErr := dbContext.Student.Find(context.TODO(), bson.M{})
 	if findErr != nil {
-		utilities.Log.Println(findErr)
+		utilities.Log.Errorln(findErr)
 		httpInternalError(w, findErr.Error())
 		return
 	}
 	decodeErr := find.All(context.TODO(), &student)
 	if decodeErr != nil {
-		utilities.Log.Println(decodeErr)
+		utilities.Log.Errorln(decodeErr)
 		httpInternalError(w, decodeErr.Error())
 		return
 	}
@@ -124,14 +124,14 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 	err := utilities.ReadJson(w, r, &student)
 	if err != nil {
 		httpInternalError(w, err.Error())
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		return
 	}
 	filter := bson.D{{"carnet", carnet}}
 	update := bson.D{{"$set", student}}
 	_, err = dbContext.Student.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		httpInternalError(w, err.Error())
 	}
 
@@ -163,7 +163,7 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	filter := bson.D{{"carnet", carnet}}
 	_, err := dbContext.Student.DeleteOne(context.TODO(), filter)
 	if err != nil {
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 		httpInternalError(w, err.Error())
 		return
 	}
@@ -189,7 +189,7 @@ func anyStudent(carnet string, wg *sync.WaitGroup, ch chan bool) {
 		ch <- false
 	} else if err != nil {
 		ch <- false
-		utilities.Log.Println(err)
+		utilities.Log.Errorln(err)
 	} else {
 		ch <- true
 	}

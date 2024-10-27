@@ -1,7 +1,7 @@
 package validations
 
 import (
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/utilities"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )

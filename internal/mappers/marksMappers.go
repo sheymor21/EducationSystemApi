@@ -1,10 +1,10 @@
 package mappers
 
 import (
-	"calificationApi/internal/dto"
-	"calificationApi/internal/models"
-	"calificationApi/internal/services/search"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/models"
+	"SchoolManagerApi/internal/services/search"
+	"SchoolManagerApi/internal/utilities"
 	"errors"
 )
 
@@ -36,7 +36,7 @@ func MarkListToGetDto(marks []models.Mark) []dto.MarksGetRequest {
 	for _, m := range marks {
 		mark, err := MarkToGetDto(m)
 		if err != nil {
-			utilities.Log.Println(err)
+			utilities.Log.Errorln(err)
 			return nil
 		}
 		mapper = append(mapper, mark)

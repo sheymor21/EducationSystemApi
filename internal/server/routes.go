@@ -1,8 +1,8 @@
 package server
 
 import (
-	"calificationApi/internal/services"
-	"calificationApi/internal/utilities"
+	"SchoolManagerApi/internal/services"
+	"SchoolManagerApi/internal/utilities"
 	"fmt"
 	"github.com/MarceloPetrucio/go-scalar-api-reference"
 	"net/http"
@@ -27,12 +27,12 @@ func (app *application) Routes() *http.ServeMux {
 			DarkMode: true,
 		})
 		if scalarErr != nil {
-			fmt.Printf("%v", scalarErr)
+			utilities.Log.Warnln(scalarErr.Error())
 		}
 
 		_, printErr := fmt.Fprintln(w, htmlContent)
 		if printErr != nil {
-			utilities.Log.Println(printErr)
+			utilities.Log.Warnln(printErr)
 			return
 		}
 	})

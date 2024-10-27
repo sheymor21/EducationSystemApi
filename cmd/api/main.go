@@ -1,6 +1,6 @@
 package main
 
-import "calificationApi/internal/server"
+import "SchoolManagerApi/internal/server"
 
 // @title		   Marks Api
 // @version		 1.0

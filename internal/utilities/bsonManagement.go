@@ -7,7 +7,7 @@ import (
 func BsonIdFormat(id string) primitive.ObjectID {
 	hex, hexErr := primitive.ObjectIDFromHex(id)
 	if hexErr != nil {
-		Log.Error(hexErr)
+		Log.Errorln(hexErr)
 	}
 	return hex
 }
