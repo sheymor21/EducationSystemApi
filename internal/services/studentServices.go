@@ -6,12 +6,11 @@ import (
 	"SchoolManagerApi/internal/models"
 	"SchoolManagerApi/internal/server/customErrors"
 	"SchoolManagerApi/internal/utilities"
+	"SchoolManagerApi/internal/validations"
 	"context"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"sync"
 )
@@ -28,7 +27,7 @@ import (
 // @Failure 500
 // @Router /student [post]
 func addStudent(w http.ResponseWriter, r *http.Request) {
-	studentDto := dto.StudentAddDto{}
+	studentDto := dto.StudentAddRequest{}
 	jsonErr := utilities.ReadJson(w, r, &studentDto)
 	if jsonErr != nil {
 		httpInternalError(w, jsonErr.Error())
@@ -48,29 +47,10 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, insertStudentErr.Error())
 		return
 	}
-	userName := fmt.Sprintf("%s %s", studentDto.FirstName, studentDto.LastName)
-	password := fmt.Sprintf("%s-%s", student.Carnet[len(student.Carnet)-3:], studentDto.LastName)
-	hashPassword, hashErr := bcrypt.GenerateFromPassword([]byte(password), 14)
-	if hashErr != nil {
-		utilities.Log.Errorln(hashErr)
-		httpInternalError(w, "Internal server error")
-		return
-	}
-	user := models.User{
-		Carnet:   student.Carnet,
-		Username: userName,
-		Password: string(hashPassword),
-	}
-	_, insertUserErr := dbContext.Users.InsertOne(context.TODO(), user)
-	if insertUserErr != nil {
-		utilities.Log.Errorln(insertUserErr)
-		_, deleteErr := dbContext.Student.DeleteOne(context.TODO(), bson.D{{"carnet", student.Carnet}})
-		if deleteErr != nil {
-			utilities.Log.Errorln(deleteErr)
-			httpInternalError(w, insertUserErr.Error())
-			return
-		}
-		httpInternalError(w, insertUserErr.Error())
+	userErr := addUser(student.FirstName, student.LastName, student.Carnet, validations.TeacherRol)
+	if userErr != nil {
+		utilities.Log.Errorln(userErr)
+		httpInternalError(w, userErr.Error())
 		return
 	}
 

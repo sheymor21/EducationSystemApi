@@ -1,9 +1,12 @@
 package services
 
 import (
+	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/mappers"
 	"SchoolManagerApi/internal/models"
 	"SchoolManagerApi/internal/server/customErrors"
 	"SchoolManagerApi/internal/utilities"
+	"SchoolManagerApi/internal/validations"
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,7 +26,7 @@ import (
 // @Router /teacher [post]
 // @Tags teacher
 func addTeacher(w http.ResponseWriter, r *http.Request) {
-	var teacher models.Teacher
+	var teacher dto.TeacherAddRequest
 	err := utilities.ReadJson(w, r, &teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
@@ -33,6 +36,13 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())
+		return
+	}
+
+	userErr := addUser(teacher.FirstName, teacher.LastName, teacher.Carnet, validations.TeacherRol)
+	if userErr != nil {
+		httpInternalError(w, userErr.Error())
+		return
 	}
 }
 
@@ -130,7 +140,8 @@ func getTeachers(w http.ResponseWriter) {
 		utilities.Log.Errorln(decodeErr)
 		return
 	}
-	utilities.WriteJson(w, http.StatusOK, teachers)
+	teacherDto := mappers.TeacherListToGetRequest(teachers)
+	utilities.WriteJson(w, http.StatusOK, teacherDto)
 }
 
 func anyTeacher(carnet string, wg *sync.WaitGroup, ch chan bool) {
