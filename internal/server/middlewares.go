@@ -35,7 +35,7 @@ func middlewareTeacherValidator(next http.Handler, validate *validator.Validate)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			teacherDto := dto.TeacherDto{}
+			teacherDto := dto.TeacherAddRequest{}
 			err := validations.Validate(w, r, validate, teacherDto)
 			if err != nil {
 				return
@@ -50,7 +50,7 @@ func middlewareStudentValidator(next http.Handler, validate *validator.Validate)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			studentAddDto := dto.StudentAddDto{}
+			studentAddDto := dto.StudentAddRequest{}
 			err := validations.Validate(w, r, validate, studentAddDto)
 			if err != nil {
 				return
@@ -76,15 +76,26 @@ func loggerMiddleware(next http.Handler) http.Handler {
 
 func loginMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
-			if r.URL.Path != "/login" {
-				validationErr := validations.LoginValidator(r)
+		switch r.URL.Path {
+		case "/students":
+			if r.Method == http.MethodGet {
+				validationErr := validations.LoginValidator(r, validations.TeacherRol, validations.AdminRol)
 				if validationErr != nil {
 					utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
 					return
 				}
 			}
+		case "/login":
+			break
+		case "/teachers":
+			break
+		default:
+			validationErr := validations.LoginValidator(r)
+			if validationErr != nil {
+				utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
+				return
+			}
+
 		}
 		next.ServeHTTP(w, r)
 	})

@@ -22,15 +22,15 @@ func Validate[T any](w http.ResponseWriter, r *http.Request, validate *validator
 	return nil
 }
 
-func LoginValidator(r *http.Request) (error error) {
+func LoginValidator(r *http.Request, permissionRol ...Rol) (error error) {
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
 		return errors.New("missing authorization header")
 	}
 	tokenString = tokenString[len("Bearer "):]
-	err := VerifyToken(tokenString)
+	err := VerifyToken(tokenString, permissionRol)
 	if err != nil {
-		return errors.New("invalid Token")
+		return err
 	}
 	return nil
 }

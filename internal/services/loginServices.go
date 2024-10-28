@@ -50,9 +50,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, dbErr.Error())
 		return
 	}
+	userRol := validations.Rol(userDb.Rol)
 	jwtUser := &validations.JWTUser{
-		UserName: user.Carnet,
-		Password: user.Password,
+		Carnet: userDb.Carnet,
+		Rol:    userRol,
 	}
 	jwt, hashComparison := validations.CreateJWT(*jwtUser)
 	if hashComparison != nil {
