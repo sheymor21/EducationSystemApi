@@ -21,7 +21,7 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "post": {
-                "description": "Get JWT by Login with username and password",
+                "description": "Get JWT by Login",
                 "consumes": [
                     "application/json"
                 ],
@@ -31,15 +31,15 @@ const docTemplate = `{
                 "tags": [
                     "login"
                 ],
-                "summary": "Get JWT by Login with username and password",
+                "summary": "Get JWT by Login",
                 "parameters": [
                     {
-                        "description": "user login",
-                        "name": "User",
+                        "description": "Login User",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UserLogin"
+                            "$ref": "#/definitions/UserLoginRequest"
                         }
                     }
                 ],
@@ -270,7 +270,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Student Carnet",
+                        "description": "StudentRol Carnet",
                         "name": "Carnet",
                         "in": "query",
                         "required": true
@@ -284,7 +284,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Student not found",
+                        "description": "StudentRol not found",
                         "schema": {
                             "type": "string"
                         }
@@ -306,13 +306,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Student Carnet",
+                        "description": "StudentRol Carnet",
                         "name": "Carnet",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "description": "Update Student",
+                        "description": "Update StudentRol",
                         "name": "student",
                         "in": "body",
                         "required": true,
@@ -353,7 +353,7 @@ const docTemplate = `{
                 "summary": "Add a student",
                 "parameters": [
                     {
-                        "description": "Add Student",
+                        "description": "Add StudentRol",
                         "name": "student",
                         "in": "body",
                         "required": true,
@@ -389,7 +389,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Student Carnet",
+                        "description": "StudentRol Carnet",
                         "name": "Carnet",
                         "in": "query",
                         "required": true
@@ -397,10 +397,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Student deleted successfully"
+                        "description": "StudentRol deleted successfully"
                     },
                     "404": {
-                        "description": "Student not found",
+                        "description": "StudentRol not found",
                         "schema": {
                             "type": "string"
                         }
@@ -537,16 +537,13 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Teacher"
+                            "$ref": "#/definitions/TeacherAddRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Teacher"
-                        }
+                        "description": "OK"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -603,7 +600,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Teacher"
+                                "$ref": "#/definitions/TeacherGetRequest"
                             }
                         }
                     },
@@ -727,13 +724,91 @@ const docTemplate = `{
                 }
             }
         },
-        "UserLogin": {
+        "TeacherAddRequest": {
             "type": "object",
+            "required": [
+                "age",
+                "carnet",
+                "classroom",
+                "firstName",
+                "lastName"
+            ],
             "properties": {
-                "password": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "carnet": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 10
+                },
+                "classroom": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "minLength": 2
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                }
+            }
+        },
+        "TeacherGetRequest": {
+            "type": "object",
+            "required": [
+                "age",
+                "carnet",
+                "classroom",
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "carnet": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 10
+                },
+                "classroom": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "minLength": 2
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                }
+            }
+        },
+        "UserLoginRequest": {
+            "type": "object",
+            "required": [
+                "carnet",
+                "password"
+            ],
+            "properties": {
+                "carnet": {
                     "type": "string"
                 },
-                "username": {
+                "password": {
                     "type": "string"
                 }
             }

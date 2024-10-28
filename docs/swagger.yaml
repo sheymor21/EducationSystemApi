@@ -77,12 +77,73 @@ definitions:
     - firstName
     - lastName
     type: object
-  UserLogin:
+  TeacherAddRequest:
     properties:
+      age:
+        maximum: 100
+        minimum: 1
+        type: integer
+      carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      classroom:
+        maxLength: 4
+        minLength: 2
+        type: string
+      firstName:
+        maxLength: 20
+        minLength: 3
+        type: string
+      lastName:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - age
+    - carnet
+    - classroom
+    - firstName
+    - lastName
+    type: object
+  TeacherGetRequest:
+    properties:
+      age:
+        maximum: 100
+        minimum: 1
+        type: integer
+      carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      classroom:
+        maxLength: 4
+        minLength: 2
+        type: string
+      firstName:
+        maxLength: 20
+        minLength: 3
+        type: string
+      lastName:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - age
+    - carnet
+    - classroom
+    - firstName
+    - lastName
+    type: object
+  UserLoginRequest:
+    properties:
+      carnet:
+        type: string
       password:
         type: string
-      username:
-        type: string
+    required:
+    - carnet
+    - password
     type: object
   models.Student:
     properties:
@@ -123,14 +184,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Get JWT by Login with username and password
+      description: Get JWT by Login
       parameters:
-      - description: user login
+      - description: Login User
         in: body
-        name: User
+        name: user
         required: true
         schema:
-          $ref: '#/definitions/UserLogin'
+          $ref: '#/definitions/UserLoginRequest'
       produces:
       - application/json
       responses:
@@ -142,7 +203,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Get JWT by Login with username and password
+      summary: Get JWT by Login
       tags:
       - login
   /mark:
@@ -282,7 +343,7 @@ paths:
       - application/json
       description: Delete a student from the database using their carnet
       parameters:
-      - description: Student Carnet
+      - description: StudentRol Carnet
         in: query
         name: Carnet
         required: true
@@ -291,9 +352,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Student deleted successfully
+          description: StudentRol deleted successfully
         "404":
-          description: Student not found
+          description: StudentRol not found
           schema:
             type: string
         "500":
@@ -309,7 +370,7 @@ paths:
       description: Retrieve a student's information from the database using their
         carnet
       parameters:
-      - description: Student Carnet
+      - description: StudentRol Carnet
         in: query
         name: Carnet
         required: true
@@ -322,7 +383,7 @@ paths:
           schema:
             $ref: '#/definitions/models.Student'
         "404":
-          description: Student not found
+          description: StudentRol not found
           schema:
             type: string
       summary: Get student by carnet
@@ -333,7 +394,7 @@ paths:
       - application/json
       description: Add a new student to the database
       parameters:
-      - description: Add Student
+      - description: Add StudentRol
         in: body
         name: student
         required: true
@@ -356,12 +417,12 @@ paths:
       - application/json
       description: Update an existing student's information in the database
       parameters:
-      - description: Student Carnet
+      - description: StudentRol Carnet
         in: query
         name: Carnet
         required: true
         type: string
-      - description: Update Student
+      - description: Update StudentRol
         in: body
         name: student
         required: true
@@ -458,14 +519,12 @@ paths:
         name: teacher
         required: true
         schema:
-          $ref: '#/definitions/models.Teacher'
+          $ref: '#/definitions/TeacherAddRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/models.Teacher'
         "500":
           description: Internal Server Error
           schema:
@@ -511,7 +570,7 @@ paths:
           description: List of teachers
           schema:
             items:
-              $ref: '#/definitions/models.Teacher'
+              $ref: '#/definitions/TeacherGetRequest'
             type: array
         "500":
           description: Internal server error
