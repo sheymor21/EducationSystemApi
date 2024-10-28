@@ -21,7 +21,7 @@ import (
 // @Tags student
 // @Accept  json
 // @Produce  json
-// @Param student body StudentAddRequest true "Add Student"
+// @Param student body StudentAddRequest true "Add StudentRol"
 // @Success 200
 // @Failure 400
 // @Failure 500
@@ -87,9 +87,9 @@ func getStudents(w http.ResponseWriter) {
 // @Tags student
 // @Accept json
 // @Produce json
-// @Param Carnet query string true "Student Carnet"
+// @Param Carnet query string true "StudentRol Carnet"
 // @Success 200 {object} models.Student
-// @Failure 404 {object} string "Student not found"
+// @Failure 404 {object} string "StudentRol not found"
 // @Router /student [get]
 func getStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
@@ -109,8 +109,8 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 // @Tags student
 // @Accept json
 // @Produce json
-// @Param Carnet query string true "Student Carnet"
-// @Param student body models.Student true "Update Student"
+// @Param Carnet query string true "StudentRol Carnet"
+// @Param student body models.Student true "Update StudentRol"
 // @Success 200 {object} models.Student
 // @Failure 400
 // @Failure 404
@@ -152,9 +152,9 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 // @Tags student
 // @Accept  json
 // @Produce  json
-// @Param Carnet query string true "Student Carnet"
-// @Success 200 "Student deleted successfully"
-// @Failure 404 {object} string "Student not found"
+// @Param Carnet query string true "StudentRol Carnet"
+// @Success 200 "StudentRol deleted successfully"
+// @Failure 404 {object} string "StudentRol not found"
 // @Failure 500 {object} string "Internal server error"
 // @Router /student [delete]
 func deleteStudent(w http.ResponseWriter, r *http.Request) {

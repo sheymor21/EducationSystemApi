@@ -14,11 +14,11 @@ import (
 )
 
 // Login handles the creation of a new mark entry in the database.
-// @Summary Get JWT by Login with username and password
-// @Description Get JWT by Login with username and password
+// @Summary Get JWT by Login
+// @Description Get JWT by Login
 // @Accept json
 // @Produce json
-// @Param User body UserLogin true "user login"
+// @Param user body UserLoginRequest true "Login User"
 // @Success 200 {object} string "JWT"
 // @Failure 500 {object} string "Internal Server Error"
 // @Router /login [post]

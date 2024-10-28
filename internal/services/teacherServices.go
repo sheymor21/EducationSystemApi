@@ -20,8 +20,8 @@ import (
 // @Description Inserts a new teacher record to the database
 // @Accept json
 // @Produce json
-// @Param teacher body models.Teacher true "New Teacher"
-// @Success 200 {object} models.Teacher
+// @Param teacher body TeacherAddRequest true "New Teacher"
+// @Success 200
 // @Failure 500 {object} map[string]string
 // @Router /teacher [post]
 // @Tags teacher
@@ -124,7 +124,7 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 
 // @Summary Retrieve all teachers
 // @Description Fetch all teacher records from the database and return them as a JSON payload
-// @Success 200 {array} models.Teacher "List of teachers"
+// @Success 200 {array} TeacherGetRequest "List of teachers"
 // @Failure 500 {string} string "Internal server error"
 // @Router /teachers [get]
 // @Tags teachers

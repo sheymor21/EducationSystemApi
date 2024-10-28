@@ -7,6 +7,6 @@ type UserAddRequest struct {
 }
 
 type UserLoginRequest struct {
-	Carnet   string `json:"carnet"`
-	Password string `json:"password"`
-} // @name UserLogin
+	Carnet   string `json:"carnet" validate:"required"`
+	Password string `json:"password" validate:"required"`
+} // @name UserLoginRequest
