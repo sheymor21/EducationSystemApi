@@ -76,26 +76,37 @@ func loggerMiddleware(next http.Handler) http.Handler {
 
 func loginMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer utilities.Recover()
 		switch r.URL.Path {
 		case "/students":
 			if r.Method == http.MethodGet {
-				validationErr := validations.LoginValidator(r, validations.TeacherRol, validations.AdminRol)
-				if validationErr != nil {
-					utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
-					return
-				}
+				validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
 			}
-		case "/login":
-			break
+		case "/Student":
+			validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
+		case "/marks":
+			validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
+		case "/mark":
+			validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
+		case "/teacher":
+			if r.Method != http.MethodPost {
+				validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
+			}
+		case "/teachers":
+			validatePermissions(w, r, validations.TeacherRol, validations.AdminRol)
 		default:
-			validationErr := validations.LoginValidator(r)
-			if validationErr != nil {
-				utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
-				return
-			}
+			validatePermissions(w, r)
 
 		}
 		next.ServeHTTP(w, r)
 	})
 
+}
+
+func validatePermissions(w http.ResponseWriter, r *http.Request, permissions ...validations.Rol) {
+	validationErr := validations.LoginValidator(r, permissions)
+	if validationErr != nil {
+		utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
+		panic("")
+	}
 }

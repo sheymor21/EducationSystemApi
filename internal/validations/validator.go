@@ -22,7 +22,7 @@ func Validate[T any](w http.ResponseWriter, r *http.Request, validate *validator
 	return nil
 }
 
-func LoginValidator(r *http.Request, permissionRol ...Rol) (error error) {
+func LoginValidator(r *http.Request, permissionRol []Rol) (error error) {
 	tokenString := r.Header.Get("Authorization")
 	if tokenString == "" {
 		return errors.New("missing authorization header")
