@@ -25,8 +25,8 @@ import (
 // @Tags login
 func Login(w http.ResponseWriter, r *http.Request) {
 
-	var user dto.UserLoginRequest
-	jsonErr := utilities.ReadJson(w, r, &user)
+	var loginRequest dto.UserLoginRequest
+	jsonErr := utilities.ReadJson(w, r, &loginRequest)
 	if jsonErr != nil {
 		httpInternalError(w, jsonErr.Error())
 		utilities.Log.Errorln(jsonErr)
@@ -34,14 +34,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var userDb models.User
-	result := dbContext.Users.FindOne(context.TODO(), bson.D{{"carnet", user.Carnet}}).Decode(&userDb)
-	hashComparison := bcrypt.CompareHashAndPassword([]byte(userDb.Password), []byte(user.Password))
+	dbErr := dbContext.Users.FindOne(context.TODO(), bson.D{{"carnet", loginRequest.Carnet}}).Decode(&userDb)
+	hashComparison := bcrypt.CompareHashAndPassword([]byte(userDb.Password), []byte(loginRequest.Password))
 	if hashComparison != nil {
-		utilities.Log.Errorln(hashComparison)
 		httpNotFoundError(w, "Incorrect Username or Password")
 		return
 	}
-	dbErr := result
+
 	if dbErr != nil {
 		if errors.Is(dbErr, mongo.ErrNoDocuments) {
 			httpNotFoundError(w, "Incorrect Username or Password")
@@ -55,9 +54,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Carnet: userDb.Carnet,
 		Rol:    userRol,
 	}
-	jwt, hashComparison := validations.CreateJWT(*jwtUser)
-	if hashComparison != nil {
-		httpInternalError(w, hashComparison.Error())
+	jwt, jwtErr := validations.CreateJWT(*jwtUser)
+	if jwtErr != nil {
+		httpInternalError(w, jwtErr.Error())
 		return
 	}
 	utilities.WriteJson(w, http.StatusOK, jwt)
