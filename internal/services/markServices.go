@@ -12,15 +12,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
-	"sync"
 )
 
-// addMark handles the creation of a new mark entry in the database.
 // @Summary Add a new mark
 // @Description Creates a new mark entry with student and teacher details
 // @Param request body MarkAddRequest true "Mark Add Request"
-// @Success 200 {object} string "Successfully added mark"
-// @Failure 500 {object} string "Internal Server Error"
+// @Success 200
+// @Failure 500 string error
 // @Router /mark [post]
 // @Tags mark
 func addMark(w http.ResponseWriter, r *http.Request) {
@@ -60,15 +58,13 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// getMarksByStudentCarnet retrieves the marks associated with a student's carnet from the database and responds with JSON.
-//
 // @Summary Retrieves student's marks by carnet
 // @Description Finds and returns the marks of a student using their carnet number.
 // @Tags marks
 // @Param Carnet query string true "Student Carnet"
 // @Success 200 {array} MarksGetRequest
-// @Failure 404 {string} string "Not Found"
-// @Failure 500 {string} string "Internal Server Error"
+// @Failure 404 {string} string "Mark Not Found"
+// @Failure 500 string error
 // @Router /marks [get]
 // @Produce json
 func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
@@ -101,26 +97,20 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 	utilities.WriteJson(w, http.StatusOK, markDto)
 }
 
-// getMark retrieves the mark details for a specific student ID.
 // @Summary Retrieve a mark
 // @Description Fetches a mark object based on the provided student ID
 // @Param id query string true "Student ID"
-// @Success 200 {object} MarksGetRequest "Successfully retrieved mark"
-// @Failure 404 {object} string "Not Found"
-// @Failure 500 {object} string "Internal Server Error"
+// @Success 200 {object} MarksGetRequest
+// @Failure 500 string error
 // @Router /mark [get]
 // @Tags marks
 func getMark(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
 	markExist := anyMarkAtStudents(id)
 	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
-	close(ch)
-	wg.Wait()
 	bsonId := utilities.BsonIdFormat(id)
 	filter := bson.M{"_id": bsonId}
 	var mark models.Mark
@@ -137,26 +127,22 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 	utilities.WriteJson(w, http.StatusOK, markDto)
 }
 
-// deleteMark handles the deletion of a specific mark by its ID.
 // @Summary Delete a mark
 // @Description Deletes a mark entry from the database using the provided mark ID
 // @Param id query string true "Mark ID"
-// @Success 200 {object} string "Successfully deleted mark"
-// @Failure 404 {object} string "Not Found"
-// @Failure 500 {object} string "Internal Server Error"
+// @Success 204
+// @Failure 404 {object} string "Mark Not Found"
+// @Failure 500 string error
 // @Router /mark [delete]
 // @Tags mark
 func deleteMark(w http.ResponseWriter, r *http.Request) {
 
-	var wg sync.WaitGroup
-	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
 	markExist := anyMarkAtStudents(id)
 	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
-	wg.Wait()
 	filter := bson.M{"id": id}
 	_, err := dbContext.Marks.DeleteOne(context.TODO(), filter)
 	if err != nil {
@@ -166,27 +152,22 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 	utilities.WriteJson(w, http.StatusNoContent, nil)
 }
 
-// updateMark updates an existing mark entry in the database based on the provided ID and request payload.
 // @Summary Update a mark
 // @Description Modifies an existing mark entry using the supplied ID and mark details
 // @Param id query string true "Mark ID"
 // @Param request body MarksUpdateRequest true "Marks Update Request"
-// @Success 200 {object} string "Successfully updated mark"
-// @Failure 404 {object} string "Not Found"
-// @Failure 500 {object} string "Internal Server Error"
+// @Success 200
+// @Failure 404 {object} string "Mark Not Found"
+// @Failure 500 string error
 // @Router /marks [put]
 // @Tags mark
 func updateMark(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
 	markExist := anyMarks(id)
 	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
-	close(ch)
-	wg.Wait()
 	var markDto dto.MarksUpdateRequest
 	err := utilities.ReadJson(w, r, &markDto)
 	if err != nil {

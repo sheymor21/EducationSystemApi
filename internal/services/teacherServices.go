@@ -12,17 +12,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
-	"sync"
 )
 
-// addTeacher handles the addition of a new teacher to the database.
 // @Summary Add a new teacher
 // @Description Inserts a new teacher record to the database
 // @Accept json
 // @Produce json
 // @Param teacher body TeacherAddRequest true "New Teacher"
 // @Success 200
-// @Failure 500 {object} map[string]string
+// @Failure 500 string error
 // @Router /teacher [post]
 // @Tags teacher
 func addTeacher(w http.ResponseWriter, r *http.Request) {
@@ -46,14 +44,13 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// updateTeacher updates an existing teacher's information in the database.
 // @Summary Update an existing teacher
 // @Description Updates the information of an existing teacher in the database
 // @Accept json
 // @Produce json
-// @Param teacher body models.Teacher true "Updated Teacher"
-// @Success 200 {object} models.Teacher
-// @Failure 500 {object} map[string]string
+// @Param teacher body TeacherUpdateRequest true "Updated Teacher"
+// @Success 200
+// @Failure 500 string error
 // @Router /teacher [put]
 // @Tags teacher
 func updateTeacher(w http.ResponseWriter, r *http.Request) {
@@ -75,12 +72,11 @@ func updateTeacher(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// deleteTeacher removes a teacher from the database based on the provided "Carnet" parameter.
 // @Summary Delete a teacher
 // @Description Deletes an existing teacher record from the database using the "Carnet" query parameter.
 // @Param Carnet query string true "Teacher Carnet"
 // @Success 204 "No Content"
-// @Failure 500 {object} map[string]string
+// @Failure 500 string error
 // @Router /teacher [delete]
 // @Tags teacher
 func deleteTeacher(w http.ResponseWriter, r *http.Request) {
@@ -96,12 +92,12 @@ func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// getTeacher retrieves the details of a teacher based on the provided "Carnet" parameter.
 // @Summary Get a teacher's details
 // @Description Fetches the information of a teacher from the database using the "Carnet" query parameter.
 // @Param Carnet query string true "Teacher Carnet"
-// @Success 200 {object} models.Teacher
-// @Failure 404 {object} map[string]string
+// @Success 200 {object} TeacherGetRequest
+// @Failure 404 {string} string "Teacher Not Found"
+// @Failure 500 string error
 // @Router /teacher [get]
 // @Tags teacher
 func getTeacher(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +122,7 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 // @Summary Retrieve all teachers
 // @Description Fetch all teacher records from the database and return them as a JSON payload
 // @Success 200 {array} TeacherGetRequest "List of teachers"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 500 string error
 // @Router /teachers [get]
 // @Tags teachers
 func getTeachers(w http.ResponseWriter) {

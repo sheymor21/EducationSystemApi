@@ -2,7 +2,7 @@ package main
 
 import "SchoolManagerApi/internal/server"
 
-// @title		   Marks Api
+// @title		   SchoolManager Api
 // @version		 1.0
 // @description This is an API for managing marks
 // @termsOfService  http://swagger.io/terms/
@@ -12,7 +12,6 @@ import "SchoolManagerApi/internal/server"
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
-// @description hi , how are you?
 func main() {
 	server.ListenServer()
 }

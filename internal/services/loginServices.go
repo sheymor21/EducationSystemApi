@@ -20,7 +20,7 @@ import (
 // @Produce json
 // @Param user body UserLoginRequest true "Login User"
 // @Success 200 {object} string "JWT"
-// @Failure 500 {object} string "Internal Server Error"
+// @Failure 500 string error
 // @Router /login [post]
 // @Tags login
 func Login(w http.ResponseWriter, r *http.Request) {

@@ -77,6 +77,35 @@ definitions:
     - firstName
     - lastName
     type: object
+  StudentGetRequest:
+    properties:
+      age:
+        maximum: 100
+        minimum: 1
+        type: integer
+      carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      classroom:
+        maxLength: 4
+        minLength: 2
+        type: string
+      firstName:
+        maxLength: 20
+        minLength: 3
+        type: string
+      lastName:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - age
+    - carnet
+    - classroom
+    - firstName
+    - lastName
+    type: object
   TeacherAddRequest:
     properties:
       age:
@@ -135,6 +164,35 @@ definitions:
     - firstName
     - lastName
     type: object
+  TeacherUpdateRequest:
+    properties:
+      age:
+        maximum: 100
+        minimum: 1
+        type: integer
+      carnet:
+        maxLength: 10
+        minLength: 10
+        type: string
+      classroom:
+        maxLength: 4
+        minLength: 2
+        type: string
+      firstName:
+        maxLength: 20
+        minLength: 3
+        type: string
+      lastName:
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - age
+    - carnet
+    - classroom
+    - firstName
+    - lastName
+    type: object
   UserLoginRequest:
     properties:
       carnet:
@@ -145,39 +203,13 @@ definitions:
     - carnet
     - password
     type: object
-  models.Student:
-    properties:
-      age:
-        type: integer
-      carnet:
-        type: string
-      classroom:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-    type: object
-  models.Teacher:
-    properties:
-      age:
-        type: integer
-      carnet:
-        type: string
-      classroom:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-    type: object
 info:
   contact:
     email: joseacvz81@gmail.com
     name: Jose Armando Coronel Vasquez
   description: This is an API for managing marks
   termsOfService: http://swagger.io/terms/
-  title: Marks Api
+  title: SchoolManager Api
   version: "1.0"
 paths:
   /login:
@@ -217,12 +249,10 @@ paths:
         required: true
         type: string
       responses:
-        "200":
-          description: Successfully deleted mark
-          schema:
-            type: string
+        "204":
+          description: No Content
         "404":
-          description: Not Found
+          description: Mark Not Found
           schema:
             type: string
         "500":
@@ -242,13 +272,9 @@ paths:
         type: string
       responses:
         "200":
-          description: Successfully retrieved mark
+          description: OK
           schema:
             $ref: '#/definitions/MarksGetRequest'
-        "404":
-          description: Not Found
-          schema:
-            type: string
         "500":
           description: Internal Server Error
           schema:
@@ -267,9 +293,7 @@ paths:
           $ref: '#/definitions/MarkAddRequest'
       responses:
         "200":
-          description: Successfully added mark
-          schema:
-            type: string
+          description: OK
         "500":
           description: Internal Server Error
           schema:
@@ -296,7 +320,7 @@ paths:
               $ref: '#/definitions/MarksGetRequest'
             type: array
         "404":
-          description: Not Found
+          description: Mark Not Found
           schema:
             type: string
         "500":
@@ -323,11 +347,9 @@ paths:
           $ref: '#/definitions/MarksUpdateRequest'
       responses:
         "200":
-          description: Successfully updated mark
-          schema:
-            type: string
+          description: OK
         "404":
-          description: Not Found
+          description: Mark Not Found
           schema:
             type: string
         "500":
@@ -343,7 +365,7 @@ paths:
       - application/json
       description: Delete a student from the database using their carnet
       parameters:
-      - description: StudentRol Carnet
+      - description: Student Carnet
         in: query
         name: Carnet
         required: true
@@ -351,14 +373,14 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: StudentRol deleted successfully
+        "204":
+          description: No Content
         "404":
-          description: StudentRol not found
+          description: Student Not Found
           schema:
             type: string
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             type: string
       summary: Delete a student
@@ -381,9 +403,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Student'
+            items:
+              $ref: '#/definitions/StudentGetRequest'
+            type: array
         "404":
-          description: StudentRol not found
+          description: Student not found
           schema:
             type: string
       summary: Get student by carnet
@@ -394,7 +418,7 @@ paths:
       - application/json
       description: Add a new student to the database
       parameters:
-      - description: Add StudentRol
+      - description: Add new Student
         in: body
         name: student
         required: true
@@ -407,8 +431,12 @@ paths:
           description: OK
         "400":
           description: Bad Request
+          schema:
+            type: string
         "500":
           description: Internal Server Error
+          schema:
+            type: string
       summary: Add a student
       tags:
       - student
@@ -417,30 +445,34 @@ paths:
       - application/json
       description: Update an existing student's information in the database
       parameters:
-      - description: StudentRol Carnet
+      - description: Student Carnet
         in: query
         name: Carnet
         required: true
         type: string
-      - description: Update StudentRol
+      - description: Update Student
         in: body
         name: student
         required: true
         schema:
-          $ref: '#/definitions/models.Student'
+          $ref: '#/definitions/StudentGetRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/models.Student'
         "400":
           description: Bad Request
+          schema:
+            type: string
         "404":
-          description: Not Found
+          description: Student Not Found
+          schema:
+            type: string
         "500":
           description: Internal Server Error
+          schema:
+            type: string
       summary: Update a student
       tags:
       - student
@@ -455,7 +487,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Student'
+              $ref: '#/definitions/StudentGetRequest'
             type: array
         "500":
           description: Internal Server Error
@@ -480,9 +512,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
       summary: Delete a teacher
       tags:
       - teacher
@@ -499,13 +529,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Teacher'
+            $ref: '#/definitions/TeacherGetRequest'
         "404":
-          description: Not Found
+          description: Teacher Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Get a teacher's details
       tags:
       - teacher
@@ -528,9 +560,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
       summary: Add a new teacher
       tags:
       - teacher
@@ -544,20 +574,16 @@ paths:
         name: teacher
         required: true
         schema:
-          $ref: '#/definitions/models.Teacher'
+          $ref: '#/definitions/TeacherUpdateRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/models.Teacher'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: string
       summary: Update an existing teacher
       tags:
       - teacher
@@ -573,7 +599,7 @@ paths:
               $ref: '#/definitions/TeacherGetRequest'
             type: array
         "500":
-          description: Internal server error
+          description: Internal Server Error
           schema:
             type: string
       summary: Retrieve all teachers
@@ -581,7 +607,6 @@ paths:
       - teachers
 securityDefinitions:
   BearerAuth:
-    description: hi , how are you?
     in: header
     name: Authorization
     type: apiKey

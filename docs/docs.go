@@ -77,15 +77,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully retrieved mark",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/MarksGetRequest"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
                         }
                     },
                     "500": {
@@ -115,10 +109,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully added mark",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "OK"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -144,14 +135,11 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Successfully deleted mark",
-                        "schema": {
-                            "type": "string"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Mark Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -195,7 +183,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Mark Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -234,13 +222,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully updated mark",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "OK"
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Mark Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -280,11 +265,14 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Student"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/StudentGetRequest"
+                            }
                         }
                     },
                     "404": {
-                        "description": "StudentRol not found",
+                        "description": "Student not found",
                         "schema": {
                             "type": "string"
                         }
@@ -306,36 +294,42 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "StudentRol Carnet",
+                        "description": "Student Carnet",
                         "name": "Carnet",
                         "in": "query",
                         "required": true
                     },
                     {
-                        "description": "Update StudentRol",
+                        "description": "Update Student",
                         "name": "student",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Student"
+                            "$ref": "#/definitions/StudentGetRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Student"
-                        }
+                        "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Student Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -353,7 +347,7 @@ const docTemplate = `{
                 "summary": "Add a student",
                 "parameters": [
                     {
-                        "description": "Add StudentRol",
+                        "description": "Add new Student",
                         "name": "student",
                         "in": "body",
                         "required": true,
@@ -367,10 +361,16 @@ const docTemplate = `{
                         "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
@@ -389,24 +389,24 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "StudentRol Carnet",
+                        "description": "Student Carnet",
                         "name": "Carnet",
                         "in": "query",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "StudentRol deleted successfully"
+                    "204": {
+                        "description": "No Content"
                     },
                     "404": {
-                        "description": "StudentRol not found",
+                        "description": "Student Not Found",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -430,7 +430,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Student"
+                                "$ref": "#/definitions/StudentGetRequest"
                             }
                         }
                     },
@@ -463,16 +463,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Teacher"
+                            "$ref": "#/definitions/TeacherGetRequest"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Teacher Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -496,24 +499,18 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Teacher"
+                            "$ref": "#/definitions/TeacherUpdateRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Teacher"
-                        }
+                        "description": "OK"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }
@@ -548,10 +545,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }
@@ -578,10 +572,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }
@@ -605,7 +596,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -724,6 +715,43 @@ const docTemplate = `{
                 }
             }
         },
+        "StudentGetRequest": {
+            "type": "object",
+            "required": [
+                "age",
+                "carnet",
+                "classroom",
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "carnet": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 10
+                },
+                "classroom": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "minLength": 2
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                }
+            }
+        },
         "TeacherAddRequest": {
             "type": "object",
             "required": [
@@ -798,6 +826,43 @@ const docTemplate = `{
                 }
             }
         },
+        "TeacherUpdateRequest": {
+            "type": "object",
+            "required": [
+                "age",
+                "carnet",
+                "classroom",
+                "firstName",
+                "lastName"
+            ],
+            "properties": {
+                "age": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 1
+                },
+                "carnet": {
+                    "type": "string",
+                    "maxLength": 10,
+                    "minLength": 10
+                },
+                "classroom": {
+                    "type": "string",
+                    "maxLength": 4,
+                    "minLength": 2
+                },
+                "firstName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                },
+                "lastName": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 3
+                }
+            }
+        },
         "UserLoginRequest": {
             "type": "object",
             "required": [
@@ -812,51 +877,10 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "models.Student": {
-            "type": "object",
-            "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "carnet": {
-                    "type": "string"
-                },
-                "classroom": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Teacher": {
-            "type": "object",
-            "properties": {
-                "age": {
-                    "type": "integer"
-                },
-                "carnet": {
-                    "type": "string"
-                },
-                "classroom": {
-                    "type": "string"
-                },
-                "firstName": {
-                    "type": "string"
-                },
-                "lastName": {
-                    "type": "string"
-                }
-            }
         }
     },
     "securityDefinitions": {
         "BearerAuth": {
-            "description": "hi , how are you?",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
@@ -870,7 +894,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Marks Api",
+	Title:            "SchoolManager Api",
 	Description:      "This is an API for managing marks",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
