@@ -87,8 +87,6 @@ func loginMiddleware(next http.Handler) http.Handler {
 			}
 		case "/login":
 			break
-		case "/teachers":
-			break
 		default:
 			validationErr := validations.LoginValidator(r)
 			if validationErr != nil {
