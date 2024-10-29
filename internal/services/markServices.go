@@ -73,53 +73,32 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 
-	var wg sync.WaitGroup
-	studentIdCh := make(chan string)
-	marksCh := make(chan []dto.MarksGetRequest)
 	studentCarnet := r.URL.Query().Get("Carnet")
-	wg.Add(2)
-	go func(carnet string) {
-		defer wg.Done()
-		defer close(studentIdCh)
-		studentId, err := search.GetStudentIdByCarnet(studentCarnet)
-		if err != nil {
-			httpNotFoundError(w, customErrors.NewNotFoundMongoError("studentCarnet").Msg)
-			return
-		}
-		studentIdCh <- studentId
+	studentId, err := search.GetStudentIdByCarnet(studentCarnet)
+	if err != nil {
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("studentCarnet").Msg)
+		return
+	}
+	var marks []models.Mark
+	filter := bson.D{{"student_id", studentId}}
+	cursor, markFindErr := dbContext.Marks.Find(context.TODO(), filter)
+	if markFindErr != nil {
+		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
+		return
+	}
+	cursorErr := cursor.All(context.TODO(), &marks)
+	if cursorErr != nil {
+		httpInternalError(w, cursorErr.Error())
+		return
+	}
+	cursorCloseErr := cursor.Close(context.TODO())
+	if cursorCloseErr != nil {
+		httpInternalError(w, cursorCloseErr.Error())
+		return
+	}
 
-	}(studentCarnet)
-
-	go func(carnet string) {
-		defer wg.Done()
-		defer close(marksCh)
-		select {
-		case studentId := <-studentIdCh:
-			var marks []models.Mark
-			filter := bson.D{{"student_id", studentId}}
-			cursor, markFindErr := dbContext.Marks.Find(context.TODO(), filter)
-			if markFindErr != nil {
-				httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
-				return
-			}
-			err := cursor.All(context.TODO(), &marks)
-			if err != nil {
-				httpInternalError(w, err.Error())
-				return
-			}
-			cursorErr := cursor.Close(context.TODO())
-			if cursorErr != nil {
-				httpInternalError(w, cursorErr.Error())
-				return
-			}
-			markDto := mappers.MarkListToGetRequest(marks)
-			marksCh <- markDto
-		}
-	}(studentCarnet)
-
-	marks := <-marksCh
-	wg.Wait()
-	utilities.WriteJson(w, http.StatusOK, marks)
+	markDto := mappers.MarkListToGetRequest(marks)
+	utilities.WriteJson(w, http.StatusOK, markDto)
 }
 
 // getMark retrieves the mark details for a specific student ID.
@@ -230,31 +209,29 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func anyMarks(id string, wg *sync.WaitGroup, ch chan bool) {
-	defer wg.Done()
+func anyMarks(id string) bool {
 	bsonId := utilities.BsonIdFormat(id)
 	filter := bson.D{{"_id", bsonId}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		ch <- false
+		return false
 	} else if err != nil {
 		utilities.Log.Errorln(err)
-		ch <- false
+		return false
 	} else {
-		ch <- true
+		return true
 	}
 }
 
-func anyMarkAtStudents(carnet string, wg *sync.WaitGroup, ch chan bool) {
-	defer wg.Done()
+func anyMarkAtStudents(carnet string) bool {
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Mark{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		ch <- false
+		return false
 	} else if err != nil {
 		utilities.Log.Errorln(err)
-		ch <- false
+		return false
 	} else {
-		ch <- true
+		return true
 	}
 }
