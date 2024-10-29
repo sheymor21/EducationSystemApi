@@ -120,15 +120,12 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 // @Failure 500
 // @Router /student [put]
 func putStudent(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	ch := make(chan bool)
 	carnet := r.URL.Query().Get("Carnet")
 	studentExist := anyStudent(carnet)
 	if studentExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 		return
 	}
-	wg.Wait()
 
 	var studentDto dto.StudentUpdateRequest
 	err := utilities.ReadJson(w, r, &studentDto)
@@ -191,17 +188,15 @@ func getStudentByCarnet(dbContext *database.MongoContext, carnet string) (models
 	return student, nil
 }
 
-func anyStudent(carnet string, wg *sync.WaitGroup, ch chan bool) {
-	defer wg.Done()
-	defer close(ch)
+func anyStudent(carnet string) bool {
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Student.FindOne(context.TODO(), filter).Decode(&models.Student{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		ch <- false
+		return false
 	} else if err != nil {
-		ch <- false
 		utilities.Log.Errorln(err)
+		return false
 	} else {
-		ch <- true
+		return true
 	}
 }
