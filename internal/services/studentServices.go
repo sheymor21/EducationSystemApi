@@ -46,6 +46,7 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, userErr.Error())
 		return
 	}
+	userErr := addUser(student.FirstName, student.LastName, student.Carnet, validations.StudentRol)
 
 }
 
