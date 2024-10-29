@@ -3,6 +3,7 @@ package services
 import (
 	"SchoolManagerApi/internal/database"
 	"SchoolManagerApi/internal/dto"
+	"SchoolManagerApi/internal/mappers"
 	"SchoolManagerApi/internal/models"
 	"SchoolManagerApi/internal/server/customErrors"
 	"SchoolManagerApi/internal/utilities"
@@ -65,20 +66,21 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "Internal Server Error"
 // @Router /students [get]
 func getStudents(w http.ResponseWriter) {
-	var student []models.Student
+	var students []models.Student
 	find, findErr := dbContext.Student.Find(context.TODO(), bson.M{})
 	if findErr != nil {
 		utilities.Log.Errorln(findErr)
 		httpInternalError(w, findErr.Error())
 		return
 	}
-	decodeErr := find.All(context.TODO(), &student)
+	decodeErr := find.All(context.TODO(), &students)
 	if decodeErr != nil {
 		utilities.Log.Errorln(decodeErr)
 		httpInternalError(w, decodeErr.Error())
 		return
 	}
-	utilities.WriteJson(w, http.StatusOK, student)
+	studentsDto := mappers.StudentListToGetRequest(students)
+	utilities.WriteJson(w, http.StatusOK, studentsDto)
 }
 
 // getStudent godoc
@@ -94,12 +96,13 @@ func getStudents(w http.ResponseWriter) {
 func getStudent(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	student, err := getStudentByCarnet(dbContext, carnet)
+	studentDto := mappers.StudentToGetRequest(student)
 	if err != nil {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 		return
 	} else {
 
-		utilities.WriteJson(w, http.StatusOK, student)
+		utilities.WriteJson(w, http.StatusOK, studentDto)
 	}
 }
 
@@ -120,22 +123,21 @@ func putStudent(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	carnet := r.URL.Query().Get("Carnet")
-	wg.Add(1)
-	go anyStudent(carnet, &wg, ch)
-	if !<-ch {
+	studentExist := anyStudent(carnet)
+	if studentExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 		return
 	}
 	wg.Wait()
 
-	var student models.Student
-	student.Carnet = carnet
-	err := utilities.ReadJson(w, r, &student)
+	var studentDto dto.StudentUpdateRequest
+	err := utilities.ReadJson(w, r, &studentDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		utilities.Log.Errorln(err)
 		return
 	}
+	student := mappers.StudentUpdateToModel(studentDto, carnet)
 	filter := bson.D{{"carnet", carnet}}
 	update := bson.D{{"$set", student}}
 	_, err = dbContext.Student.UpdateOne(context.TODO(), filter, update)
@@ -161,9 +163,8 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	carnet := r.URL.Query().Get("Carnet")
-	wg.Add(1)
-	go anyStudent(carnet, &wg, ch)
-	if <-ch {
+	studentExist := anyStudent(carnet)
+	if studentExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
 		return
 	}
@@ -176,6 +177,7 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, err.Error())
 		return
 	}
+	utilities.WriteJson(w, http.StatusNoContent, nil)
 }
 
 func getStudentByCarnet(dbContext *database.MongoContext, carnet string) (models.Student, *customErrors.NotFoundMongoError) {
