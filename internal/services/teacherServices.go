@@ -24,13 +24,14 @@ import (
 // @Router /teacher [post]
 // @Tags teacher
 func addTeacher(w http.ResponseWriter, r *http.Request) {
-	var teacher dto.TeacherAddRequest
-	err := utilities.ReadJson(w, r, &teacher)
+	var teacherDto dto.TeacherAddRequest
+	err := utilities.ReadJson(w, r, &teacherDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		utilities.Log.Errorln(err)
 		return
 	}
+	teacher := mappers.TeacherAddToModel(teacherDto)
 	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
 	if err != nil {
 		httpInternalError(w, err.Error())

@@ -33,3 +33,13 @@ func TeacherUpdateToModel(d dto.TeacherUpdateRequest) models.Teacher {
 		Classroom: d.Classroom,
 	}
 }
+
+func TeacherAddToModel(d dto.TeacherAddRequest) models.Teacher {
+	return models.Teacher{
+		Carnet:    d.Carnet,
+		FirstName: d.FirstName,
+		LastName:  d.LastName,
+		Age:       d.Age,
+		Classroom: d.Classroom,
+	}
+}
