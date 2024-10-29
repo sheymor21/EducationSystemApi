@@ -105,15 +105,12 @@ func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 // @Router /teacher [get]
 // @Tags teacher
 func getTeacher(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	ch := make(chan bool)
 	carnet := r.URL.Query().Get("Carnet")
 	teacherExist := anyTeacher(carnet)
 	if teacherExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
 		return
 	}
-	wg.Wait()
 	var teacher models.Teacher
 	filter := bson.M{"carnet": carnet}
 	err := dbContext.Teachers.FindOne(context.TODO(), filter).Decode(&teacher)
@@ -148,17 +145,15 @@ func getTeachers(w http.ResponseWriter) {
 	utilities.WriteJson(w, http.StatusOK, teacherDto)
 }
 
-func anyTeacher(carnet string, wg *sync.WaitGroup, ch chan bool) {
-	defer wg.Done()
-	defer close(ch)
+func anyTeacher(carnet string) bool {
 	filter := bson.D{{"carnet", carnet}}
 	err := dbContext.Teachers.FindOne(context.TODO(), filter).Decode(&models.Teacher{})
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		ch <- false
+		return false
 	} else if err != nil {
 		utilities.Log.Errorln(err)
-		ch <- false
+		return false
 	} else {
-		ch <- true
+		return true
 	}
 }
