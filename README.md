@@ -34,6 +34,19 @@ go run cmd/api/main.go
 
 You can access the API UI by opening the root URL (`/`) of the running server.
 
+## Login
+
+### Create a User
+
+You need to create a **teacher** for use all other endpoints, then you go to **login** , insert the credencial and you will receive a bearer token
+
+When you create a teacher or a student, automatically you create a user, the users credentials are the carnet and the password.
+
+### How Credentials Works
+
+The **password** is created by the last 3 characters of the carnet and the lastname, if your name is **John Smith** and your carnet is **F421A34D21D** then you password will be 21D-smith
+
+
 # Author
 
 - [sheymor21](https://github.com/sheymor21)
