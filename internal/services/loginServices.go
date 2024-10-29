@@ -8,6 +8,7 @@ import (
 	"SchoolManagerApi/internal/validations"
 	"context"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -17,8 +18,6 @@ import (
 // Login handles the creation of a new mark entry in the database.
 // @Summary Get JWT by Login
 // @Description Get JWT by Login
-// @Accept json
-// @Produce json
 // @Param user body UserLoginRequest true "Login User"
 // @Success 200 {object} string "JWT"
 // @Failure 500 string error
@@ -51,6 +50,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	jwt, jwtErr := validations.CreateJWT(jwtUser)
 	customErrors.ThrowHttpError(jwtErr, w, "", http.StatusInternalServerError)
-	utilities.WriteJson(w, http.StatusOK, jwt)
+	jwtFormat := fmt.Sprintf("%v %v", "Bearer", jwt)
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte(jwtFormat))
+	customErrors.ThrowHttpError(err, w, "", http.StatusInternalServerError)
 
 }
