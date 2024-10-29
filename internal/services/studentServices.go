@@ -35,18 +35,9 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 	}
 	student := mappers.StudentAddToModel(studentDto)
 	_, insertStudentErr := dbContext.Student.InsertOne(context.TODO(), student)
-	if insertStudentErr != nil {
-		utilities.Log.Errorln(insertStudentErr)
-		httpInternalError(w, insertStudentErr.Error())
-		return
-	}
-	userErr := addUser(student.FirstName, student.LastName, student.Carnet, validations.TeacherRol)
-	if userErr != nil {
-		utilities.Log.Errorln(userErr)
-		httpInternalError(w, userErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(insertStudentErr, w, "", http.StatusInternalServerError)
 	userErr := addUser(student.FirstName, student.LastName, student.Carnet, validations.StudentRol)
+	customErrors.ThrowHttpError(userErr, w, "", http.StatusInternalServerError)
 
 }
 
