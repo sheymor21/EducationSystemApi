@@ -12,6 +12,7 @@ If you have Golang , download the project in your PC:
 git clone https://github.com/sheymor21/EducationSystemApi.git
 ~~~
 
+if you use [Docker](https://www.docker.com), you can run docker compose up for run the project, you need to set the .env file before.
 ## Parameters
 
 - DB_U (Required)  is the db user
