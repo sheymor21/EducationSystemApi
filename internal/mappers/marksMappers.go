@@ -8,7 +8,7 @@ import (
 	"errors"
 )
 
-func MarkToGetDto(m models.Mark) (dto.MarksGetRequest, error) {
+func MarkToGetRequest(m models.Mark) (dto.MarksGetRequest, error) {
 
 	studentCarnet, studentErr := search.GetStudentCarnetById(m.StudentId)
 	if studentErr != nil {
@@ -31,10 +31,10 @@ func MarkToGetDto(m models.Mark) (dto.MarksGetRequest, error) {
 	return mapper, nil
 }
 
-func MarkListToGetDto(marks []models.Mark) []dto.MarksGetRequest {
+func MarkListToGetRequest(marks []models.Mark) []dto.MarksGetRequest {
 	var mapper []dto.MarksGetRequest
 	for _, m := range marks {
-		mark, err := MarkToGetDto(m)
+		mark, err := MarkToGetRequest(m)
 		if err != nil {
 			utilities.Log.Errorln(err)
 			return nil
@@ -44,7 +44,7 @@ func MarkListToGetDto(marks []models.Mark) []dto.MarksGetRequest {
 	return mapper
 }
 
-func UpdateDtoToMark(dto dto.MarksUpdateRequest, id string) (models.Mark, error) {
+func MarkUpdateToModel(dto dto.MarksUpdateRequest, id string) (models.Mark, error) {
 
 	studentId, studentErr := search.GetStudentIdByCarnet(dto.StudentCarnet)
 	if studentErr != nil {

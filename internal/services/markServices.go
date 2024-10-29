@@ -112,7 +112,7 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 				httpInternalError(w, cursorErr.Error())
 				return
 			}
-			markDto := mappers.MarkListToGetDto(marks)
+			markDto := mappers.MarkListToGetRequest(marks)
 			marksCh <- markDto
 		}
 	}(studentCarnet)
@@ -135,9 +135,8 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
-	wg.Add(1)
-	go anyMarkAtStudents(id, &wg, ch)
-	if <-ch {
+	markExist := anyMarkAtStudents(id)
+	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
@@ -151,7 +150,7 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
-	markDto, mapperErr := mappers.MarkToGetDto(mark)
+	markDto, mapperErr := mappers.MarkToGetRequest(mark)
 	if mapperErr != nil {
 		httpNotFoundError(w, mapperErr.Error())
 		return
@@ -173,9 +172,8 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
-	wg.Add(1)
-	go anyMarkAtStudents(id, &wg, ch)
-	if <-ch {
+	markExist := anyMarkAtStudents(id)
+	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
@@ -186,7 +184,7 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, err.Error())
 		return
 	}
-
+	utilities.WriteJson(w, http.StatusNoContent, nil)
 }
 
 // updateMark updates an existing mark entry in the database based on the provided ID and request payload.
@@ -203,9 +201,8 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	id := r.URL.Query().Get("id")
-	wg.Add(1)
-	go anyMarks(id, &wg, ch)
-	if <-ch {
+	markExist := anyMarks(id)
+	if markExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
 		return
 	}
@@ -218,7 +215,7 @@ func updateMark(w http.ResponseWriter, r *http.Request) {
 		utilities.Log.Errorln(err)
 		return
 	}
-	mark, mapperErr := mappers.UpdateDtoToMark(markDto, id)
+	mark, mapperErr := mappers.MarkUpdateToModel(markDto, id)
 	if mapperErr != nil {
 		httpNotFoundError(w, mapperErr.Error())
 		return
