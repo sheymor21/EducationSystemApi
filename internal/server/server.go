@@ -37,7 +37,7 @@ func ListenServer() {
 
 	envErr := godotenv.Load(".env")
 	if envErr != nil {
-		utilities.Log.Errorln("Error loading .env file")
+		utilities.Log.Warnln(".env file not found")
 	}
 
 	if mc.Username == "" && mc.Password == "" {
@@ -54,7 +54,8 @@ func ListenServer() {
 		dbUri := os.Getenv("DB_URI")
 		if dbName != "" {
 			mc.DbName = dbName
-		} else if dbUri != "" {
+		}
+		if dbUri != "" {
 			mc.DbUri = dbUri
 		}
 	}
