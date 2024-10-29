@@ -2,11 +2,6 @@
 
 Simple API for School management using Golang
 
-# Dependencies
-
-- Go 1.22.4
-- MongoDriver 1.16.0
-
 # How to Run
 
 If you don't have Golang download from  [Go](https://go.dev)
@@ -23,6 +18,8 @@ git clone https://github.com/sheymor21/EducationSystemApi.git
 - DB_P (Required)  is the db password
 - DB_URI (Optional)  it the mongo db Uri, by default it is "mongodb://localhost:27017"
 - DB_NAME (Optional) is the name of the database, by default it is "EducationSystem"
+- port (Optional) is the application port , by default 8080
+- env (Optional) is the application environment, by default dev
 
 For run the project use:
 
