@@ -25,24 +25,14 @@ import (
 // @Tags teacher
 func addTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacherDto dto.TeacherAddRequest
-	err := utilities.ReadJson(w, r, &teacherDto)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		utilities.Log.Errorln(err)
-		return
-	}
+	jsonErr := utilities.ReadJson(w, r, &teacherDto)
+	customErrors.ThrowHttpError(jsonErr, w, "", http.StatusInternalServerError)
 	teacher := mappers.TeacherAddToModel(teacherDto)
-	_, err = dbContext.Teachers.InsertOne(context.TODO(), teacher)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		return
-	}
+	_, dbErr := dbContext.Teachers.InsertOne(context.TODO(), teacher)
+	customErrors.ThrowHttpError(dbErr, w, "", http.StatusInternalServerError)
 
 	userErr := addUser(teacher.FirstName, teacher.LastName, teacher.Carnet, validations.TeacherRol)
-	if userErr != nil {
-		httpInternalError(w, userErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(userErr, w, "", http.StatusInternalServerError)
 }
 
 // @Summary Update an existing teacher
@@ -56,21 +46,14 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 // @Tags teacher
 func updateTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacherDto dto.TeacherUpdateRequest
-	err := utilities.ReadJson(w, r, &teacherDto)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		utilities.Log.Errorln(err)
-		return
-	}
+	jsonErr := utilities.ReadJson(w, r, &teacherDto)
+	customErrors.ThrowHttpError(jsonErr, w, "", http.StatusInternalServerError)
 
 	teacher := mappers.TeacherUpdateToModel(teacherDto)
 	filter := bson.M{"carnet": teacher.Carnet}
 	update := bson.M{"$set": teacher}
-	_, err = dbContext.Teachers.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		return
-	}
+	_, dbErr := dbContext.Teachers.UpdateOne(context.TODO(), filter, update)
+	customErrors.ThrowHttpError(dbErr, w, "", http.StatusInternalServerError)
 }
 
 // @Summary Delete a teacher
@@ -84,11 +67,8 @@ func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	filter := bson.M{"carnet": carnet}
 
-	_, err := dbContext.Teachers.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		return
-	}
+	_, dbErr := dbContext.Teachers.DeleteOne(context.TODO(), filter)
+	customErrors.ThrowHttpError(dbErr, w, "", http.StatusInternalServerError)
 	utilities.WriteJson(w, http.StatusNoContent, nil)
 
 }
@@ -105,16 +85,13 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 	carnet := r.URL.Query().Get("Carnet")
 	teacherExist := anyTeacher(carnet)
 	if teacherExist {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
+		http.Error(w, "Not found this carnet", http.StatusNotFound)
 		return
 	}
 	var teacher models.Teacher
 	filter := bson.M{"carnet": carnet}
-	err := dbContext.Teachers.FindOne(context.TODO(), filter).Decode(&teacher)
-	if err != nil {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
-		return
-	}
+	dbErr := dbContext.Teachers.FindOne(context.TODO(), filter).Decode(&teacher)
+	customErrors.ThrowHttpError(dbErr, w, "Not found this carnet", http.StatusNotFound)
 	teacherDto := mappers.TeacherToGetRequest(teacher)
 	utilities.WriteJson(w, http.StatusOK, teacherDto)
 

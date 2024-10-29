@@ -107,6 +107,6 @@ func validatePermissions(w http.ResponseWriter, r *http.Request, permissions ...
 	validationErr := validations.LoginValidator(r, permissions)
 	if validationErr != nil {
 		utilities.WriteJsonError(w, http.StatusUnauthorized, validationErr.Error())
-		panic("")
+		panic(nil)
 	}
 }

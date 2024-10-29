@@ -3,6 +3,7 @@ package services
 import (
 	"SchoolManagerApi/internal/dto"
 	"SchoolManagerApi/internal/models"
+	"SchoolManagerApi/internal/server/customErrors"
 	"SchoolManagerApi/internal/utilities"
 	"SchoolManagerApi/internal/validations"
 	"context"
@@ -24,41 +25,32 @@ import (
 // @Router /login [post]
 // @Tags login
 func Login(w http.ResponseWriter, r *http.Request) {
-
+	defer utilities.Recover()
 	var loginRequest dto.UserLoginRequest
+
 	jsonErr := utilities.ReadJson(w, r, &loginRequest)
-	if jsonErr != nil {
-		httpInternalError(w, jsonErr.Error())
-		utilities.Log.Errorln(jsonErr)
-		return
-	}
+	customErrors.ThrowHttpError(jsonErr, w, "", http.StatusInternalServerError)
 
 	var userDb models.User
 	dbErr := dbContext.Users.FindOne(context.TODO(), bson.D{{"carnet", loginRequest.Carnet}}).Decode(&userDb)
-	hashComparison := bcrypt.CompareHashAndPassword([]byte(userDb.Password), []byte(loginRequest.Password))
-	if hashComparison != nil {
-		httpNotFoundError(w, "Incorrect Username or Password")
-		return
-	}
+	hashComparisonErr := bcrypt.CompareHashAndPassword([]byte(userDb.Password), []byte(loginRequest.Password))
+	customErrors.ThrowHttpError(hashComparisonErr, w, "Incorrect Username or Password", http.StatusNotFound)
 
 	if dbErr != nil {
 		if errors.Is(dbErr, mongo.ErrNoDocuments) {
-			httpNotFoundError(w, "Incorrect Username or Password")
+			http.Error(w, "Incorrect Username or Password", http.StatusNotFound)
 			return
 		}
-		httpInternalError(w, dbErr.Error())
+		http.Error(w, dbErr.Error(), http.StatusNotFound)
 		return
 	}
 	userRol := validations.Rol(userDb.Rol)
-	jwtUser := &validations.JWTUser{
+	jwtUser := validations.JWTUser{
 		Carnet: userDb.Carnet,
 		Rol:    userRol,
 	}
-	jwt, jwtErr := validations.CreateJWT(*jwtUser)
-	if jwtErr != nil {
-		httpInternalError(w, jwtErr.Error())
-		return
-	}
+	jwt, jwtErr := validations.CreateJWT(jwtUser)
+	customErrors.ThrowHttpError(jwtErr, w, "", http.StatusInternalServerError)
 	utilities.WriteJson(w, http.StatusOK, jwt)
 
 }

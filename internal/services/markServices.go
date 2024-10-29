@@ -22,31 +22,18 @@ import (
 // @Router /mark [post]
 // @Tags mark
 func addMark(w http.ResponseWriter, r *http.Request) {
-
+	defer utilities.Recover()
 	var markDto dto.MarkAddRequest
-	err := utilities.ReadJson(w, r, &markDto)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		utilities.Log.Errorln(err)
-		return
-	}
+	jsonErr := utilities.ReadJson(w, r, &markDto)
+	customErrors.ThrowHttpError(jsonErr, w, "", http.StatusInternalServerError)
 	teacherId, teacherErr := search.GetTeacherIdByCarnet(markDto.TeacherCarnet)
 	studentId, studentErr := search.GetStudentIdByCarnet(markDto.StudentCarnet)
-	if teacherErr != nil {
-		httpInternalError(w, teacherErr.Error())
-		return
-	}
-	if studentErr != nil {
-		httpInternalError(w, studentErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(teacherErr, w, "", http.StatusNotFound)
+	customErrors.ThrowHttpError(studentErr, w, "", http.StatusNotFound)
 
 	mark := mappers.MarkAddToModel(markDto, teacherId, studentId)
-	_, err = dbContext.Marks.InsertOne(context.TODO(), mark)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		return
-	}
+	_, dbErr := dbContext.Marks.InsertOne(context.TODO(), mark)
+	customErrors.ThrowHttpError(dbErr, w, "", http.StatusInternalServerError)
 
 }
 
@@ -60,30 +47,18 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 // @Router /marks [get]
 // @Produce json
 func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
-
+	defer utilities.Recover()
 	studentCarnet := r.URL.Query().Get("Carnet")
 	studentId, err := search.GetStudentIdByCarnet(studentCarnet)
-	if err != nil {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("studentCarnet").Msg)
-		return
-	}
+	customErrors.ThrowHttpError(err, w, "Not Found this studentCarnet", http.StatusNotFound)
 	var marks []models.Mark
 	filter := bson.D{{"student_id", studentId}}
 	cursor, markFindErr := dbContext.Marks.Find(context.TODO(), filter)
-	if markFindErr != nil {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Msg)
-		return
-	}
+	customErrors.ThrowHttpError(markFindErr, w, "Not Found this carnet", http.StatusNotFound)
 	cursorErr := cursor.All(context.TODO(), &marks)
-	if cursorErr != nil {
-		httpInternalError(w, cursorErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(cursorErr, w, "", http.StatusNotFound)
 	cursorCloseErr := cursor.Close(context.TODO())
-	if cursorCloseErr != nil {
-		httpInternalError(w, cursorCloseErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(cursorCloseErr, w, "", http.StatusNotFound)
 
 	markDto := mappers.MarkListToGetRequest(marks)
 	utilities.WriteJson(w, http.StatusOK, markDto)
@@ -97,25 +72,20 @@ func getMarksByStudentCarnet(w http.ResponseWriter, r *http.Request) {
 // @Router /mark [get]
 // @Tags marks
 func getMark(w http.ResponseWriter, r *http.Request) {
+	defer utilities.Recover()
 	id := r.URL.Query().Get("id")
 	markExist := anyMarkAtStudents(id)
 	if markExist {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
+		http.Error(w, "Not found this id", http.StatusNotFound)
 		return
 	}
 	bsonId := utilities.BsonIdFormat(id)
 	filter := bson.M{"_id": bsonId}
 	var mark models.Mark
 	err := dbContext.Marks.FindOne(context.TODO(), filter).Decode(&mark)
-	if err != nil {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
-		return
-	}
+	customErrors.ThrowHttpError(err, w, "Not found this id", http.StatusNotFound)
 	markDto, mapperErr := mappers.MarkToGetRequest(mark)
-	if mapperErr != nil {
-		httpNotFoundError(w, mapperErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(mapperErr, w, "", http.StatusNotFound)
 	utilities.WriteJson(w, http.StatusOK, markDto)
 }
 
@@ -128,19 +98,16 @@ func getMark(w http.ResponseWriter, r *http.Request) {
 // @Router /mark [delete]
 // @Tags mark
 func deleteMark(w http.ResponseWriter, r *http.Request) {
-
+	defer utilities.Recover()
 	id := r.URL.Query().Get("id")
 	markExist := anyMarkAtStudents(id)
 	if markExist {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
+		http.Error(w, "Not found this id", http.StatusNotFound)
 		return
 	}
 	filter := bson.M{"id": id}
 	_, err := dbContext.Marks.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		return
-	}
+	customErrors.ThrowHttpError(err, w, "", http.StatusInternalServerError)
 	utilities.WriteJson(w, http.StatusNoContent, nil)
 }
 
@@ -154,31 +121,23 @@ func deleteMark(w http.ResponseWriter, r *http.Request) {
 // @Router /marks [put]
 // @Tags mark
 func updateMark(w http.ResponseWriter, r *http.Request) {
+	defer utilities.Recover()
 	id := r.URL.Query().Get("id")
 	markExist := anyMarks(id)
 	if markExist {
-		httpNotFoundError(w, customErrors.NewNotFoundMongoError("id").Msg)
+		http.Error(w, "Not found this id", http.StatusNotFound)
 		return
 	}
 	var markDto dto.MarksUpdateRequest
-	err := utilities.ReadJson(w, r, &markDto)
-	if err != nil {
-		httpInternalError(w, err.Error())
-		utilities.Log.Errorln(err)
-		return
-	}
+	jsonErr := utilities.ReadJson(w, r, &markDto)
+	customErrors.ThrowHttpError(jsonErr, w, "", http.StatusInternalServerError)
 	mark, mapperErr := mappers.MarkUpdateToModel(markDto, id)
-	if mapperErr != nil {
-		httpNotFoundError(w, mapperErr.Error())
-		return
-	}
+	customErrors.ThrowHttpError(mapperErr, w, "", http.StatusNotFound)
 	bsonId := utilities.BsonIdFormat(id)
 	filter := bson.M{"_id": bsonId}
 	update := bson.M{"$set": mark}
-	_, err = dbContext.Marks.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		httpInternalError(w, err.Error())
-	}
+	_, dbErr := dbContext.Marks.UpdateOne(context.TODO(), filter, update)
+	customErrors.ThrowHttpError(dbErr, w, "", http.StatusInternalServerError)
 
 }
 
