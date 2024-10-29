@@ -23,3 +23,13 @@ func TeacherListToGetRequest(model []models.Teacher) []dto.TeacherGetRequest {
 	}
 	return mapper
 }
+
+func TeacherUpdateToModel(d dto.TeacherUpdateRequest) models.Teacher {
+	return models.Teacher{
+		Carnet:    d.Carnet,
+		FirstName: d.FirstName,
+		LastName:  d.LastName,
+		Age:       d.Age,
+		Classroom: d.Classroom,
+	}
+}

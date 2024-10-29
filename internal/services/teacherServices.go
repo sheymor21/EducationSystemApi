@@ -57,13 +57,15 @@ func addTeacher(w http.ResponseWriter, r *http.Request) {
 // @Router /teacher [put]
 // @Tags teacher
 func updateTeacher(w http.ResponseWriter, r *http.Request) {
-	var teacher models.Teacher
-	err := utilities.ReadJson(w, r, &teacher)
+	var teacherDto dto.TeacherUpdateRequest
+	err := utilities.ReadJson(w, r, &teacherDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		utilities.Log.Errorln(err)
 		return
 	}
+
+	teacher := mappers.TeacherUpdateToModel(teacherDto)
 	filter := bson.M{"carnet": teacher.Carnet}
 	update := bson.M{"$set": teacher}
 	_, err = dbContext.Teachers.UpdateOne(context.TODO(), filter, update)
@@ -90,6 +92,7 @@ func deleteTeacher(w http.ResponseWriter, r *http.Request) {
 		httpInternalError(w, err.Error())
 		return
 	}
+	utilities.WriteJson(w, http.StatusNoContent, nil)
 
 }
 
@@ -105,8 +108,8 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	ch := make(chan bool)
 	carnet := r.URL.Query().Get("Carnet")
-	go anyTeacher(carnet, &wg, ch)
-	if <-ch {
+	teacherExist := anyTeacher(carnet)
+	if teacherExist {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
 		return
 	}
@@ -118,7 +121,8 @@ func getTeacher(w http.ResponseWriter, r *http.Request) {
 		httpNotFoundError(w, customErrors.NewNotFoundMongoError("carnet").Error())
 		return
 	}
-	utilities.WriteJson(w, http.StatusOK, teacher)
+	teacherDto := mappers.TeacherToGetRequest(teacher)
+	utilities.WriteJson(w, http.StatusOK, teacherDto)
 
 }
 
