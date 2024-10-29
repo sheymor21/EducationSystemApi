@@ -1,0 +1,31 @@
+﻿services:
+  app:
+    build:
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      DB_U: ${DB_U}
+      DB_P: ${DB_P}
+      DB_NAME: ${DB_NAME}
+      DB_URI: mongodb://mongoDb:27017
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      mongoDb:
+        condition: service_started
+    networks:
+      goApi-Db:
+
+  mongoDb:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_U}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_P}
+      MONGO_INITDB_ROOT_DATABASE: ${DB_NAME}
+    ports:
+      - "27017:27017"
+    restart: on-failure:3
+    networks:
+      goApi-Db:
+networks:
+  goApi-Db:
