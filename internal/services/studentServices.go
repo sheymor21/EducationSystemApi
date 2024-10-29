@@ -33,13 +33,7 @@ func addStudent(w http.ResponseWriter, r *http.Request) {
 		utilities.Log.Errorln(jsonErr)
 		return
 	}
-	student := models.Student{
-		Carnet:    studentDto.Carnet,
-		FirstName: studentDto.FirstName,
-		LastName:  studentDto.LastName,
-		Age:       studentDto.Age,
-		Classroom: studentDto.Classroom,
-	}
+	student := mappers.StudentAddToModel(studentDto)
 	_, insertStudentErr := dbContext.Student.InsertOne(context.TODO(), student)
 	if insertStudentErr != nil {
 		utilities.Log.Errorln(insertStudentErr)

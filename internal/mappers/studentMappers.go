@@ -32,3 +32,14 @@ func StudentUpdateToModel(d dto.StudentUpdateRequest, carnet string) models.Stud
 		Classroom: d.Classroom,
 	}
 }
+
+func StudentAddToModel(s dto.StudentAddRequest) models.Student {
+	return models.Student{
+
+		Carnet:    s.Carnet,
+		FirstName: s.FirstName,
+		LastName:  s.LastName,
+		Age:       s.Age,
+		Classroom: s.Classroom,
+	}
+}
