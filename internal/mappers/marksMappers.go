@@ -66,3 +66,13 @@ func MarkUpdateToModel(dto dto.MarksUpdateRequest, id string) (models.Mark, erro
 	}
 	return mapper, nil
 }
+
+func MarkAddToModel(d dto.MarkAddRequest, teacherId, studentId string) models.Mark {
+	return models.Mark{
+		StudentId: teacherId,
+		TeacherId: studentId,
+		Grade:     d.Grade,
+		Mark:      d.Mark,
+		Semester:  d.Semester,
+	}
+}

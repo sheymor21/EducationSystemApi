@@ -23,15 +23,15 @@ import (
 // @Tags mark
 func addMark(w http.ResponseWriter, r *http.Request) {
 
-	var input dto.MarkAddRequest
-	err := utilities.ReadJson(w, r, &input)
+	var markDto dto.MarkAddRequest
+	err := utilities.ReadJson(w, r, &markDto)
 	if err != nil {
 		httpInternalError(w, err.Error())
 		utilities.Log.Errorln(err)
 		return
 	}
-	teacherId, teacherErr := search.GetTeacherIdByCarnet(input.TeacherCarnet)
-	studentId, studentErr := search.GetStudentIdByCarnet(input.StudentCarnet)
+	teacherId, teacherErr := search.GetTeacherIdByCarnet(markDto.TeacherCarnet)
+	studentId, studentErr := search.GetStudentIdByCarnet(markDto.StudentCarnet)
 	if teacherErr != nil {
 		httpInternalError(w, teacherErr.Error())
 		return
@@ -41,15 +41,7 @@ func addMark(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var mark models.Mark
-	{
-		mark.TeacherId = teacherId
-		mark.StudentId = studentId
-		mark.Grade = input.Grade
-		mark.Semester = input.Semester
-		mark.Mark = input.Mark
-
-	}
+	mark := mappers.MarkAddToModel(markDto, teacherId, studentId)
 	_, err = dbContext.Marks.InsertOne(context.TODO(), mark)
 	if err != nil {
 		httpInternalError(w, err.Error())
